@@ -1,0 +1,23 @@
+<style>
+    #drop_zone {
+        border: 5px solid blue;
+        height: 200px;
+    }
+</style>
+
+
+<div id="drop_zone">
+    <pre>請拖拉一個或多個 spine_xxx.json 至此 ...</pre>
+</div>
+<pre>
+spineJson 轉換 cc.AnimationClip 工具
+說明：
+- 目前支援的屬性 { fps, rotation, scale, scaleX, scaleY, opacity, x, y }
+- time 0 要有初始值
+- fps 預設為 24
+- 數值後處理
+  - scale/100
+  - scaleX/100
+  - scaleY/100
+  - opacity/100*255
+</pre><script type="text/javascript" src="bundle.js"></script>
