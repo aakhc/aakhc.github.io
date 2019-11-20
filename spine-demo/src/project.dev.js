@@ -35335,6 +35335,7 @@ window.__require = function e(t, n, r) {
         _this.skeletonData = null;
         _this.premultipliedAlpha = false;
         _this.cacheMode = false;
+        _this.timeScale = 1;
         return _this;
       }
       SpineTest.prototype.onLoad = function() {
@@ -35347,7 +35348,7 @@ window.__require = function e(t, n, r) {
         this.skeletonData = ske.skeletonData;
         this.apply();
       };
-      SpineTest.prototype.onEditingDidEnded = function(editBox) {
+      SpineTest.prototype.onLengthEditingDidEnded = function(editBox) {
         this.length = Number(editBox.string) || 1;
         this.apply();
       };
@@ -35357,6 +35358,10 @@ window.__require = function e(t, n, r) {
       };
       SpineTest.prototype.onCacheModeClick = function(toggle) {
         this.cacheMode = toggle.isChecked;
+        this.apply();
+      };
+      SpineTest.prototype.onTimeScaleEditingDidEnded = function(editBox) {
+        this.timeScale = Number(editBox.string) || 1;
         this.apply();
       };
       SpineTest.prototype.listNames = function(skeletonData) {
@@ -35419,6 +35424,7 @@ window.__require = function e(t, n, r) {
         var premultipliedAlpha = this.premultipliedAlpha;
         var cacheMode = this.cacheMode;
         var animation = this.animation;
+        var timeScale = this.timeScale;
         var p = this.content;
         p.removeAllChildren();
         var ns = getAnimationNames(skeletonData);
@@ -35431,6 +35437,7 @@ window.__require = function e(t, n, r) {
           skeOld.node.removeFromParent();
           var ske = SpSkeletonHack_1.genSkeleton(skeletonData, m, n);
           ske.premultipliedAlpha = premultipliedAlpha;
+          ske.timeScale = timeScale;
           var status = ske.node.addComponent(SpSkeletonStatus_1.default);
           var gp = node.getComponentInChildren(GraphicsProfile_1.default);
           status.graphicsProfile = gp;
