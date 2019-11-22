@@ -1,5 +1,5 @@
 # aaaql.github.io
 - [spineJson2ccAnimationClip tool](/spineJson2ccAnimationClip)
-- [charCode tool](/charCodeAt0)
-- [particle-demo](/particle-demo)
-- [spine-demo](/spine-demo)
+- [char code tool](/char_code)
+- [particle demo](/particle-demo)
+- [spine demo](/spine-demo)
