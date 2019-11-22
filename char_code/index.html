@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div style="display:flex;">
+        <div style="flex: 1;">
+            <pre>
+字串 轉 ASCII 工具
+說明：
+- 在輸入框內輸入要轉換的字串
+- 使用 javascript charCodeAt 方法
+    </pre>
+            <input id="i" type="text" style="width: 90%;"></input>
+            <div style="display:flex;" >
+                <pre style="flex: 1;" id="code1"></pre>
+                <pre style="flex: 1;" id="code2"></pre>
+            </div>
+        </div>
+        <div style="flex: 1;">
+            <pre>
+ASCII 轉 字串 工具
+說明：
+- 在輸入框內輸入要轉換的 ASCII，用 逗點(,) 分隔
+- 使用 javascript String.fromCharCode 方法
+        </pre>
+            <input id="i2" type="text" style="width: 90%;"></input>
+            <div style="display:flex;" >
+                <pre style="flex: 1;" id="str1"></pre>
+                <pre style="flex: 1; word-break: break-all;white-space: pre-wrap;" id="str2"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let i = document.querySelector("#i")
+        let code1 = document.querySelector("#code1")
+        let code2 = document.querySelector("#code2")
+        i.addEventListener("keyup", function (ev) {
+            var v = ev.target.value;
+            code1.innerHTML = v && v.split("").map(v => v + ':' + v.charCodeAt(0)).join("\n");
+            code2.innerHTML = v && v.split("").map(v => v.charCodeAt(0)).join(",\n");
+        })
+        let i2 = document.querySelector("#i2")
+        let str1 = document.querySelector("#str1")
+        let str2 = document.querySelector("#str2")
+        i2.addEventListener("keyup", function (ev) {
+            var v = ev.target.value;
+            str1.innerHTML = v && v.split(",").map(v => String.fromCharCode(Number(v.trim()))).join("\n");
+            str2.innerHTML = v && v.split(",").map(v => String.fromCharCode(Number(v.trim()))).join("");
+        })
+        document.body.addEventListener('dblclick', (el) => {
+            if (el && el.target && el.target instanceof HTMLPreElement) {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(el.target);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                el.stopPropagation();
+            }
+        });
+    </script>
+</body>
+
+</html>
