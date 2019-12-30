@@ -3,4 +3,4 @@
 - [字串 轉 charCode](/char_code)
 - [plist 轉 fnt](/plist2fnt)
 - [particle demo](/particle-demo)
-- [spine demo](/spine-demo)
+- [spine-demo v0.1.0](/spine-demo2)
