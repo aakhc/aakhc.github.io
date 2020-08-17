@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+
+    <h1>devicemotion:</h1>
+    <h2></h2>
+    <script>
+        var h2 = document.querySelector("h2")
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', function (event) {
+                h2.innerText = JSON.stringify(event);
+            }, false);
+        } else {
+            h2.innerText = 'DeviceMotionEvent not support';
+        }
+        
+        
+    </script>
+
+</body>
+
+</html>
