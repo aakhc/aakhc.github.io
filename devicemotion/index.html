@@ -7,18 +7,68 @@
 <body>
 
     <h1>devicemotion:</h1>
-    <h2></h2>
+    <h2 id="devicemotion"></h2>
+    <h1>deviceorientation:</h1>
+    <h2 id="deviceorientation"></h2>
     <script>
-        var h2 = document.querySelector("h2")
-        if (window.DeviceMotionEvent) {
-            window.addEventListener('devicemotion', function (event) {
-                h2.innerText = JSON.stringify(event);
-            }, false);
-        } else {
-            h2.innerText = 'DeviceMotionEvent not support';
+        var devicemotion = document.querySelector("#devicemotion")
+        var deviceorientation = document.querySelector("#deviceorientation")
+        function println1(str){
+            devicemotion.innerText = str;
         }
-        
-        
+        function println2(str){
+            deviceorientation.innerText = str;
+        }
+
+        if (window.DeviceMotionEvent) {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                // iOS 13+
+                DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response == 'granted') {
+                            window.addEventListener('devicemotion', function (event) {
+                                println1(JSON.stringify(event));
+                            }, false);
+                        }
+                    })
+                    .catch(err=> {
+                        println1(JSON.stringify(err))
+                    })
+            } else {
+                window.addEventListener('devicemotion', function (event) {
+                    println1(JSON.stringify(event));
+                }, false);
+            }
+
+        } else {
+            println1('DeviceMotionEvent not support');
+        }
+
+        if (window.DeviceOrientationEvent) {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // iOS 13+
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        println2(JSON.stringify(response));
+                        if (response == 'granted') {
+                            window.addEventListener('deviceorientation', function (event) {
+                                println2(JSON.stringify(event));
+                            }, false);
+                        }
+                    })
+                    .catch(err=> {
+                        println2(JSON.stringify(err))
+                    })
+            } else {
+                window.addEventListener('deviceorientation', function (event) {
+                    println2(JSON.stringify(event));
+                }, false);
+            }
+
+        } else {
+            println2('DeviceOrientationEvent not support');
+        }
+
     </script>
 
 </body>
