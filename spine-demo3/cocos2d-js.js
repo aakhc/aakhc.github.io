@@ -33424,7 +33424,7 @@
       this.version = version;
     };
     function unpackJSONs(data, classFinder) {
-      if (data[0] < 1) throw new Error(cc.debug.getError(5304, data[0]));
+      if (data[0] < SUPPORT_MIN_FORMAT_VERSION) throw new Error(cc.debug.getError(5304, data[0]));
       lookupClasses(data, true, classFinder);
       cacheMasks(data);
       var version = new FileInfo(data[0]);
@@ -33437,7 +33437,7 @@
       return sections;
     }
     function packCustomObjData(type, data, hasNativeDep) {
-      return [ 1, EMPTY_PLACEHOLDER, EMPTY_PLACEHOLDER, [ type ], EMPTY_PLACEHOLDER, hasNativeDep ? [ data, -1 ] : [ data ], [ 0 ], EMPTY_PLACEHOLDER, [], [], [] ];
+      return [ SUPPORT_MIN_FORMAT_VERSION, EMPTY_PLACEHOLDER, EMPTY_PLACEHOLDER, [ type ], EMPTY_PLACEHOLDER, hasNativeDep ? [ data, -1 ] : [ data ], [ 0 ], EMPTY_PLACEHOLDER, [], [], [] ];
     }
     function hasNativeDep(data) {
       var instances = data[5];

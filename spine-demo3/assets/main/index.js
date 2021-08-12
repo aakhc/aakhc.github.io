@@ -24337,6 +24337,7 @@ window.__require = function e(t, n, r) {
           this.camera.node.x = 0;
           this.camera.node.y = 0;
           this.camera.zoomRatio = 1;
+          this.updateLabel();
           break;
 
          case cc.macro.KEY.z:
@@ -39557,10 +39558,10 @@ window.__require = function e(t, n, r) {
                 return [ 2 ];
               }
               is = ns.map(function(n) {
-                return SpSkeletonStatus_1.spSkeletonInfo(skeleton, n);
+                return SpSkeletonStatus_1.spSkeletonDuration(skeleton, n);
               });
               is.sort(function(a, b) {
-                return a.duration - b.duration;
+                return a - b;
               });
               lens = Utils_1.range(MAX).map(function() {
                 return 0;
@@ -39925,16 +39926,18 @@ window.__require = function e(t, n, r) {
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.spSkeletonInfo = void 0;
+    exports.spSkeletonInfo = exports.spSkeletonDuration = void 0;
     var LibGlobal_1 = require("../LibGlobal");
     var Utils_1 = require("../utils/Utils");
     var GraphicsProfile_1 = require("./GraphicsProfile");
+    var NodeShrink_1 = require("./NodeShrink");
     var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property, requireComponent = _a.requireComponent, executionOrder = _a.executionOrder;
     var SpSkeletonStatus = function(_super) {
       __extends(SpSkeletonStatus, _super);
       function SpSkeletonStatus() {
         var _this = null !== _super && _super.apply(this, arguments) || this;
         _this.label = null;
+        _this.richtext = null;
         _this.graphicsProfile = null;
         _this.skeleton = null;
         _this.max = -Infinity;
@@ -39944,8 +39947,8 @@ window.__require = function e(t, n, r) {
         return _this;
       }
       SpSkeletonStatus.prototype.load = function() {
-        var i = spSkeletonInfo(this.skeleton, void 0);
-        var arr = [ i.name + "(" + Number(i.duration).toFixed(2) + "s)", i.cacheMode + " mode", [ i.bones.length, i.totalBones ].join("/") + " bones", [ i.slots.length, i.totalSlots ].join("/") + " slots", i.textures.length + " textures", [ i.timelinesFrames, i.timelines.length ].join("/") + " timelines", i.drawCall + "(" + i.textureChange + "," + i.blendChange + ") drawcall", i.meshBones + " mesh bones" ];
+        var i = spSkeletonInfo(this.skeleton, void 0, true);
+        var arr = [ i.name + "(" + Number(i.duration).toFixed(2) + "s)", i.cacheMode + " mode", [ i.bones.length, i.totalBones ].join("/") + " bones", [ i.slots.length, i.totalSlots ].join("/") + " slots", i.textures.length + " textures", [ i.timelinesFrames, i.timelines.length ].join("/") + " timelines", i.drawCall + "(" + i.textureChange + "," + i.blendChange + ") drawcall", i.meshBones + " mesh bones", [ i.verticesChange, i.totalVertices ].join("/") + " vertices", [ i.triangleChange, i.totalTriangles ].join("/") + " triangle" ];
         this.str = arr.join("\n");
       };
       SpSkeletonStatus.prototype.onLoad = function() {
@@ -39953,6 +39956,11 @@ window.__require = function e(t, n, r) {
         this.skeleton = this.getComponent(sp.Skeleton);
         this.load();
         this.label && (this.label.string = this.str);
+        if (this.richtext) {
+          this.richtext.string = this.str;
+          var shrink = this.richtext.getComponent(NodeShrink_1.default);
+          shrink && shrink.resize();
+        }
         var update = this.skeleton.update.bind(this.skeleton);
         this.skeleton.update = function(dt) {
           var now = performance.now();
@@ -39963,15 +39971,27 @@ window.__require = function e(t, n, r) {
           diff > _this.max && (_this.max = diff);
           diff < _this.min && (_this.min = diff);
           _this.label && (_this.label.string = _this.str + "\n" + [ _this.min.toFixed(3), (_this.avgs.reduce(Utils_1.sumReducer, 0) / _this.avgs.length).toFixed(3), _this.max.toFixed(3) ].join("/") + "ms");
+          if (_this.richtext) {
+            _this.richtext.string = _this.str + "\n" + [ _this.min.toFixed(3), (_this.avgs.reduce(Utils_1.sumReducer, 0) / _this.avgs.length).toFixed(3), _this.max.toFixed(3) ].join("/") + "ms";
+            var shrink = _this.richtext.getComponent(NodeShrink_1.default);
+            shrink && shrink.resize();
+          }
           _this.graphicsProfile && _this.graphicsProfile.pushData(1e3 * diff);
         };
       };
       __decorate([ property(cc.Label) ], SpSkeletonStatus.prototype, "label", void 0);
+      __decorate([ property(cc.RichText) ], SpSkeletonStatus.prototype, "richtext", void 0);
       __decorate([ property(GraphicsProfile_1.default) ], SpSkeletonStatus.prototype, "graphicsProfile", void 0);
       SpSkeletonStatus = __decorate([ ccclass, requireComponent(sp.Skeleton), executionOrder(1) ], SpSkeletonStatus);
       return SpSkeletonStatus;
     }(cc.Component);
     exports.default = SpSkeletonStatus;
+    function spSkeletonDuration(ske, animation) {
+      var animationName = animation || ske.animation || ske.defaultAnimation;
+      var duration = ske.findAnimation(animationName).duration;
+      return duration;
+    }
+    exports.spSkeletonDuration = spSkeletonDuration;
     function spSkeletonInfo(ske, animation, logMissingRegions) {
       void 0 === logMissingRegions && (logMissingRegions = false);
       var animationName = animation || ske.animation || ske.defaultAnimation;
@@ -39996,6 +40016,13 @@ window.__require = function e(t, n, r) {
       var atlasCache = skeletonData._atlasCache;
       var regions = atlasCache.regions;
       var regionsMap = regions.reduce(Utils_1.toObjectReducer("name"), {});
+      var _b = getSkeletonMeshData(ske), meshTable = _b.meshTable, totalVertices = _b.totalVertices, totalTriangles = _b.totalTriangles, totalUVs = _b.totalUVs;
+      var verticesChange = slotAttachment.reduce(function(acc, x) {
+        return meshTable[x] ? acc + meshTable[x]["vertices"] : acc;
+      }, 0);
+      var triangleChange = slotAttachment.reduce(function(acc, x) {
+        return meshTable[x] ? acc + meshTable[x]["triangles"] : acc;
+      }, 0);
       var drawCall = 0;
       var blendChange = 0;
       var textureChange = 0;
@@ -40054,15 +40081,119 @@ window.__require = function e(t, n, r) {
         drawCall: drawCall,
         textures: textures,
         meshBones: meshBones,
+        totalVertices: totalVertices,
+        totalTriangles: totalTriangles,
+        totalUVs: totalUVs,
+        verticesChange: verticesChange,
+        triangleChange: triangleChange,
         name: animationName
       };
     }
     exports.spSkeletonInfo = spSkeletonInfo;
+    function getSkeletonMeshData(sk) {
+      var skData = sk.skeletonData;
+      var skins = skData.skeletonJson.skins;
+      if (skins.default) {
+        var obj_1 = skins.default;
+        var tDataArr_1 = [];
+        var tDataMap_1 = {};
+        Object.keys(obj_1).forEach(function(key0) {
+          var obj0 = obj_1[key0];
+          Object.keys(obj0).forEach(function(key1) {
+            var obj1 = obj0[key1];
+            var dType = obj1.type;
+            var vertices = obj1.vertices;
+            var triangles = obj1.triangles;
+            var uvs = obj1.uvs;
+            if (dType && vertices && triangles && uvs) {
+              var tableData = {
+                attachmentName: key1,
+                bones: "",
+                type: dType,
+                vertices: vertices.length,
+                triangles: Math.floor(triangles.length / 3),
+                uvs: uvs.length
+              };
+              tDataArr_1.push(tableData);
+              tDataMap_1[key1] = tableData;
+            }
+          });
+        });
+        var totalVertices = tDataArr_1.reduce(function(acc, x) {
+          return acc + x["vertices"];
+        }, 0);
+        var totalTriangles = tDataArr_1.reduce(function(acc, x) {
+          return acc + x["triangles"];
+        }, 0);
+        var totalUVs = tDataArr_1.reduce(function(acc, x) {
+          return acc + x["uvs"];
+        }, 0);
+        console.table(tDataArr_1);
+        var meshTable = tDataMap_1;
+        return {
+          meshTable: meshTable,
+          totalVertices: totalVertices,
+          totalTriangles: totalTriangles,
+          totalUVs: totalUVs
+        };
+      }
+      var obj_2 = skins;
+      var tDataArr_2 = [];
+      var tDataMap_2 = {};
+      Object.keys(obj_2).forEach(function(key0) {
+        var obj0 = obj_2[key0];
+        Object.keys(obj0).forEach(function(key1) {
+          var obj1 = obj0[key1];
+          Object.keys(obj1).forEach(function(key2) {
+            var obj2 = obj1[key2];
+            Object.keys(obj2).forEach(function(key3) {
+              var obj3 = obj2[key3];
+              var dType = obj3.type;
+              var vertices = obj3.vertices;
+              var triangles = obj3.triangles;
+              var uvs = obj3.uvs;
+              if (dType && vertices && triangles && uvs) {
+                var skName = obj0.name;
+                var tableData = {
+                  skinName: skName,
+                  attachmentName: key3,
+                  bones: "",
+                  type: dType,
+                  vertices: vertices.length,
+                  triangles: Math.floor(triangles.length / 3),
+                  uvs: uvs.length
+                };
+                tDataArr_2.push(tableData);
+                tDataMap_2[key2] = tableData;
+              }
+            });
+          });
+        });
+      });
+      var totalVertices = tDataArr_2.reduce(function(acc, x) {
+        return acc + x["vertices"];
+      }, 0);
+      var totalTriangles = tDataArr_2.reduce(function(acc, x) {
+        return acc + x["triangles"];
+      }, 0);
+      var totalUVs = tDataArr_2.reduce(function(acc, x) {
+        return acc + x["uvs"];
+      }, 0);
+      console.table(tDataArr_2);
+      var meshTable = tDataMap_2;
+      return {
+        meshTable: meshTable,
+        totalVertices: totalVertices,
+        totalTriangles: totalTriangles,
+        totalUVs: totalUVs
+      };
+    }
     cc._RF.pop();
   }, {
     "../LibGlobal": "LibGlobal",
     "../utils/Utils": "Utils",
-    "./GraphicsProfile": "GraphicsProfile"
+    "./GraphicsProfile": "GraphicsProfile",
+    "./NodeShrink": "NodeShrink"
   } ],
   SpineDemo: [ function(require, module, exports) {
     "use strict";
@@ -40108,6 +40239,7 @@ window.__require = function e(t, n, r) {
         var _this = null !== _super && _super.apply(this, arguments) || this;
         _this.bgSprite = null;
         _this.infoLabel = null;
+        _this.infoRichText = null;
         _this.graphicsProfile = null;
         _this.listContent = null;
         _this.content = null;
@@ -40259,12 +40391,14 @@ window.__require = function e(t, n, r) {
             node.children[0].active = true;
             node.children[1].active = true;
             status.label = _this.infoLabel;
+            status.richtext = _this.infoRichText;
             status.graphicsProfile = _this.graphicsProfile;
           }
         });
       };
       __decorate([ property(cc.Sprite) ], SpineTest.prototype, "bgSprite", void 0);
       __decorate([ property(cc.Label) ], SpineTest.prototype, "infoLabel", void 0);
+      __decorate([ property(cc.RichText) ], SpineTest.prototype, "infoRichText", void 0);
       __decorate([ property(GraphicsProfile_1.default) ], SpineTest.prototype, "graphicsProfile", void 0);
       __decorate([ property(cc.Node) ], SpineTest.prototype, "listContent", void 0);
       __decorate([ property(cc.Node) ], SpineTest.prototype, "content", void 0);
