@@ -40440,7 +40440,6 @@ window.__require = function e(t, n, r) {
       tex.name = f.name;
       tex._name = "";
       tex._native = ".png";
-      tex.url = img.src;
       tex._nativeUrl = img.src;
       var frame = new cc.SpriteFrame();
       frame.name = f.name;
