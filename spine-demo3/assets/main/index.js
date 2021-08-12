@@ -39948,7 +39948,7 @@ window.__require = function e(t, n, r) {
       }
       SpSkeletonStatus.prototype.load = function() {
         var i = spSkeletonInfo(this.skeleton, void 0, true);
-        var arr = [ i.name + "(" + Number(i.duration).toFixed(2) + "s)", i.cacheMode + " mode", [ i.bones.length, i.totalBones ].join("/") + " bones", [ i.slots.length, i.totalSlots ].join("/") + " slots", i.textures.length + " textures", [ i.timelinesFrames, i.timelines.length ].join("/") + " timelines", i.drawCall + "(" + i.textureChange + "," + i.blendChange + ") drawcall", i.meshBones + " mesh bones", [ i.verticesChange, i.totalVertices ].join("/") + " vertices", [ i.triangleChange, i.totalTriangles ].join("/") + " triangle" ];
+        var arr = [ i.name + "(" + Number(i.duration).toFixed(2) + "s)", i.cacheMode + " mode", [ i.bones.length, i.totalBones ].join("/") + " bones", [ i.slots.length, i.totalSlots ].join("/") + " slots", i.textures.length + " textures", [ i.timelinesFrames, i.timelines.length ].join("/") + " timelines", i.drawCall + "(" + i.textureChange + "," + i.blendChange + ") drawcall", i.meshBones + " mesh bones", [ i.verticesChange, i.totalVertices ].join("/") + " vertices", [ i.triangleChange, i.totalTriangles ].join("/") + " triangles" ];
         this.str = arr.join("\n");
       };
       SpSkeletonStatus.prototype.onLoad = function() {
@@ -40254,6 +40254,9 @@ window.__require = function e(t, n, r) {
         _this.timeScale = 1;
         _this.loop = true;
         _this.filter = "";
+        _this.debugSlots = false;
+        _this.debugBones = false;
+        _this.debugMesh = false;
         return _this;
       }
       SpineTest.prototype.onLoad = function() {
@@ -40297,6 +40300,18 @@ window.__require = function e(t, n, r) {
       };
       SpineTest.prototype.onTimeScaleEditingDidEnded = function(editBox) {
         this.timeScale = Number(editBox.string) || 1;
+        this.apply();
+      };
+      SpineTest.prototype.onDebugSlotsClick = function(toggle) {
+        this.debugSlots = toggle.isChecked;
+        this.apply();
+      };
+      SpineTest.prototype.onDebugBonesClick = function(toggle) {
+        this.debugBones = toggle.isChecked;
+        this.apply();
+      };
+      SpineTest.prototype.onDebugMeshClick = function(toggle) {
+        this.debugMesh = toggle.isChecked;
         this.apply();
       };
       SpineTest.prototype.listNames = function(skeletonData, filter) {
@@ -40371,6 +40386,9 @@ window.__require = function e(t, n, r) {
         var timeScale = this.timeScale;
         var p = this.content;
         var loop = this.loop;
+        var debugSlots = this.debugSlots;
+        var debugBones = this.debugBones;
+        var debugMesh = this.debugMesh;
         p.removeAllChildren();
         var ns = getAnimationNames(skeletonData);
         var n = -1 === ns.indexOf(animation) ? ns[0] : animation;
@@ -40393,6 +40411,11 @@ window.__require = function e(t, n, r) {
             status.label = _this.infoLabel;
             status.richtext = _this.infoRichText;
             status.graphicsProfile = _this.graphicsProfile;
+            _this.scheduleOnce(function() {
+              ske.debugSlots = debugSlots;
+              ske.debugBones = debugBones;
+              ske.debugMesh = debugMesh;
+            }, 0);
           }
         });
       };
@@ -40417,6 +40440,8 @@ window.__require = function e(t, n, r) {
       tex.name = f.name;
       tex._name = "";
       tex._native = ".png";
+      tex.url = img.src;
+      tex._nativeUrl = img.src;
       var frame = new cc.SpriteFrame();
       frame.name = f.name;
       frame.setTexture(tex);
