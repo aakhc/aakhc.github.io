@@ -29342,6 +29342,70 @@ window.__require = function e(t, n, r) {
     exports.default = Handler;
     cc._RF.pop();
   }, {} ],
+  Hover: [ function(require, module, exports) {
+    "use strict";
+    cc._RF.push(module, "378b9dg/NZCUp/yzZvmFWql", "Hover");
+    "use strict";
+    var __extends = this && this.__extends || function() {
+      var extendStatics = function(d, b) {
+        extendStatics = Object.setPrototypeOf || {
+          __proto__: []
+        } instanceof Array && function(d, b) {
+          d.__proto__ = b;
+        } || function(d, b) {
+          for (var p in b) Object.prototype.hasOwnProperty.call(b, p) && (d[p] = b[p]);
+        };
+        return extendStatics(d, b);
+      };
+      return function(d, b) {
+        extendStatics(d, b);
+        function __() {
+          this.constructor = d;
+        }
+        d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+    }();
+    var __decorate = this && this.__decorate || function(decorators, target, key, desc) {
+      var c = arguments.length, r = c < 3 ? target : null === desc ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+      if ("object" === typeof Reflect && "function" === typeof Reflect.decorate) r = Reflect.decorate(decorators, target, key, desc); else for (var i = decorators.length - 1; i >= 0; i--) (d = decorators[i]) && (r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r);
+      return c > 3 && r && Object.defineProperty(target, key, r), r;
+    };
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
+    var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+    var Hover = function(_super) {
+      __extends(Hover, _super);
+      function Hover() {
+        var _this = null !== _super && _super.apply(this, arguments) || this;
+        _this.hoverNodes = [];
+        return _this;
+      }
+      Hover.prototype.onEnable = function() {
+        this.node.on(cc.Node.EventType.MOUSE_ENTER, this.onMouseEnter, this);
+        this.node.on(cc.Node.EventType.MOUSE_LEAVE, this.onMouseLeave, this);
+      };
+      Hover.prototype.onDisable = function() {
+        this.node.off(cc.Node.EventType.MOUSE_ENTER, this.onMouseEnter, this);
+        this.node.off(cc.Node.EventType.MOUSE_LEAVE, this.onMouseLeave, this);
+      };
+      Hover.prototype.onMouseEnter = function() {
+        this.hoverNodes.forEach(function(node) {
+          return node.active = true;
+        });
+      };
+      Hover.prototype.onMouseLeave = function() {
+        this.hoverNodes.forEach(function(node) {
+          return node.active = false;
+        });
+      };
+      __decorate([ property([ cc.Node ]) ], Hover.prototype, "hoverNodes", void 0);
+      Hover = __decorate([ ccclass ], Hover);
+      return Hover;
+    }(cc.Component);
+    exports.default = Hover;
+    cc._RF.pop();
+  }, {} ],
   I18nActive: [ function(require, module, exports) {
     "use strict";
     cc._RF.push(module, "61a93wM4sdM0ZSS5IWirxGT", "I18nActive");
@@ -39926,7 +39990,7 @@ window.__require = function e(t, n, r) {
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.spSkeletonInfo = exports.spSkeletonDuration = void 0;
+    exports.getSkeletonMeshData = exports.spSkeletonInfo = exports.spSkeletonDuration = void 0;
     var LibGlobal_1 = require("../LibGlobal");
     var Utils_1 = require("../utils/Utils");
     var GraphicsProfile_1 = require("./GraphicsProfile");
@@ -40016,7 +40080,7 @@ window.__require = function e(t, n, r) {
       var atlasCache = skeletonData._atlasCache;
       var regions = atlasCache.regions;
       var regionsMap = regions.reduce(Utils_1.toObjectReducer("name"), {});
-      var _b = getSkeletonMeshData(ske), meshTable = _b.meshTable, totalVertices = _b.totalVertices, totalTriangles = _b.totalTriangles, totalUVs = _b.totalUVs;
+      var _b = getSkeletonMeshData(skeletonData), meshTable = _b.meshTable, totalVertices = _b.totalVertices, totalTriangles = _b.totalTriangles, totalUVs = _b.totalUVs;
       var verticesChange = slotAttachment.reduce(function(acc, x) {
         return meshTable[x] ? acc + meshTable[x]["vertices"] : acc;
       }, 0);
@@ -40090,9 +40154,9 @@ window.__require = function e(t, n, r) {
       };
     }
     exports.spSkeletonInfo = spSkeletonInfo;
-    function getSkeletonMeshData(sk) {
-      var skData = sk.skeletonData;
-      var skins = skData.skeletonJson.skins;
+    function getSkeletonMeshData(skeletonData, log) {
+      void 0 === log && (log = false);
+      var skins = skeletonData.skeletonJson.skins;
       if (skins.default) {
         var obj_1 = skins.default;
         var tDataArr_1 = [];
@@ -40128,7 +40192,7 @@ window.__require = function e(t, n, r) {
         var totalUVs = tDataArr_1.reduce(function(acc, x) {
           return acc + x["uvs"];
         }, 0);
-        console.table(tDataArr_1);
+        log && console.table(tDataArr_1);
         var meshTable = tDataMap_1;
         return {
           meshTable: meshTable,
@@ -40179,7 +40243,7 @@ window.__require = function e(t, n, r) {
       var totalUVs = tDataArr_2.reduce(function(acc, x) {
         return acc + x["uvs"];
       }, 0);
-      console.table(tDataArr_2);
+      log && console.table(tDataArr_2);
       var meshTable = tDataMap_2;
       return {
         meshTable: meshTable,
@@ -40188,6 +40252,7 @@ window.__require = function e(t, n, r) {
         totalUVs: totalUVs
       };
     }
+    exports.getSkeletonMeshData = getSkeletonMeshData;
     cc._RF.pop();
   }, {
     "../LibGlobal": "LibGlobal",
@@ -40233,9 +40298,9 @@ window.__require = function e(t, n, r) {
     var LibGlobal_1 = require("../submodule/game-client-lib/runtime-scripts/LibGlobal");
     var Utils_1 = require("../submodule/game-client-lib/runtime-scripts/utils/Utils");
     var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
-    var SpineTest = function(_super) {
-      __extends(SpineTest, _super);
-      function SpineTest() {
+    var SpineDemo = function(_super) {
+      __extends(SpineDemo, _super);
+      function SpineDemo() {
         var _this = null !== _super && _super.apply(this, arguments) || this;
         _this.bgSprite = null;
         _this.infoLabel = null;
@@ -40257,9 +40322,11 @@ window.__require = function e(t, n, r) {
         _this.debugSlots = false;
         _this.debugBones = false;
         _this.debugMesh = false;
+        _this.messageAnimation = null;
+        _this.messageLabel = null;
         return _this;
       }
-      SpineTest.prototype.onLoad = function() {
+      SpineDemo.prototype.onLoad = function() {
         this.template = this.content.children[0];
         this.template.removeFromParent();
         this.listTemplate = this.listContent.children[0];
@@ -40269,7 +40336,7 @@ window.__require = function e(t, n, r) {
         this.skeletonData = ske.skeletonData;
         this.apply();
       };
-      SpineTest.prototype.onCameraButtonClick = function() {
+      SpineDemo.prototype.onCameraButtonClick = function() {
         var label = this.cameraButton.getComponentInChildren(cc.Label);
         var str = "skeleton" === label.string ? "background" : "skeleton";
         label.string = str;
@@ -40277,44 +40344,43 @@ window.__require = function e(t, n, r) {
         var c = this.getComponent(CameraControl_1.default);
         c.updateCamera(camera);
       };
-      SpineTest.prototype.onFilterTextChanged = function(str) {
+      SpineDemo.prototype.onFilterTextChanged = function(str) {
         this.filter = str || "";
-        var ske = this.template.getComponentInChildren(sp.Skeleton);
-        this.listNames(ske.skeletonData, this.filter);
+        this.listNames(this.skeletonData, this.filter);
       };
-      SpineTest.prototype.onLengthEditingDidEnded = function(editBox) {
+      SpineDemo.prototype.onLengthEditingDidEnded = function(editBox) {
         this.length = Number(editBox.string) || 1;
         this.apply();
       };
-      SpineTest.prototype.onPremultipliedAlphaClick = function(toggle) {
+      SpineDemo.prototype.onPremultipliedAlphaClick = function(toggle) {
         this.premultipliedAlpha = toggle.isChecked;
         this.apply();
       };
-      SpineTest.prototype.onLoopClick = function(toggle) {
+      SpineDemo.prototype.onLoopClick = function(toggle) {
         this.loop = toggle.isChecked;
         this.apply();
       };
-      SpineTest.prototype.onCacheModeClick = function(toggle) {
+      SpineDemo.prototype.onCacheModeClick = function(toggle) {
         this.cacheMode = toggle.isChecked;
         this.apply();
       };
-      SpineTest.prototype.onTimeScaleEditingDidEnded = function(editBox) {
+      SpineDemo.prototype.onTimeScaleEditingDidEnded = function(editBox) {
         this.timeScale = Number(editBox.string) || 1;
         this.apply();
       };
-      SpineTest.prototype.onDebugSlotsClick = function(toggle) {
+      SpineDemo.prototype.onDebugSlotsClick = function(toggle) {
         this.debugSlots = toggle.isChecked;
         this.apply();
       };
-      SpineTest.prototype.onDebugBonesClick = function(toggle) {
+      SpineDemo.prototype.onDebugBonesClick = function(toggle) {
         this.debugBones = toggle.isChecked;
         this.apply();
       };
-      SpineTest.prototype.onDebugMeshClick = function(toggle) {
+      SpineDemo.prototype.onDebugMeshClick = function(toggle) {
         this.debugMesh = toggle.isChecked;
         this.apply();
       };
-      SpineTest.prototype.listNames = function(skeletonData, filter) {
+      SpineDemo.prototype.listNames = function(skeletonData, filter) {
         var _this = this;
         void 0 === filter && (filter = "");
         var p = this.listContent;
@@ -40325,19 +40391,30 @@ window.__require = function e(t, n, r) {
           if (filter && !regex.test(n)) return;
           var node = cc.instantiate(_this.listTemplate);
           var label = node.getComponentInChildren(cc.Label);
+          label.enableBold = _this.animation === n;
+          label.enableUnderline = _this.animation === n;
+          label.enableItalic = _this.animation === n;
           label.string = n;
-          var button = node.getComponent(cc.Button);
-          button.clickEvents[0].customEventData = n;
+          var buttons = node.getComponentsInChildren(cc.Button);
+          buttons.forEach(function(button) {
+            return button.clickEvents[0].customEventData = n;
+          });
           p.addChild(node);
           return n;
         }).filter(Utils_1.identity);
       };
-      SpineTest.prototype.onClick = function(target, name) {
+      SpineDemo.prototype.onClick = function(target, name) {
         this.animation = name;
-        LibGlobal_1.log(name);
+        this.listNames(this.skeletonData, this.filter);
+        this.message(name);
         this.apply();
       };
-      SpineTest.prototype.onFileDroped = function(files) {
+      SpineDemo.prototype.onCopyClick = function(target, name) {
+        ctrlC(name);
+        this.message("Copied: " + name);
+        LibGlobal_1.log("Copied: " + name);
+      };
+      SpineDemo.prototype.onFileDroped = function(files) {
         cc.dynamicAtlasManager.enabled = false;
         var textureNames = [];
         var textures = [];
@@ -40373,10 +40450,11 @@ window.__require = function e(t, n, r) {
           this.skeletonData = skeletonData;
           this.apply();
           var names = this.listNames(skeletonData);
+          SpSkeletonStatus_1.getSkeletonMeshData(skeletonData, true);
           LibGlobal_1.log(names);
         }
       };
-      SpineTest.prototype.apply = function() {
+      SpineDemo.prototype.apply = function() {
         var _this = this;
         var skeletonData = this.skeletonData;
         var length = this.length;
@@ -40402,10 +40480,10 @@ window.__require = function e(t, n, r) {
           ske.premultipliedAlpha = premultipliedAlpha;
           ske.timeScale = timeScale;
           ske.loop = loop;
-          var status = ske.node.addComponent(SpSkeletonStatus_1.default);
           skep.addChild(ske.node);
           p.addChild(node);
           if (0 === i) {
+            var status = ske.node.addComponent(SpSkeletonStatus_1.default);
             node.children[0].active = true;
             node.children[1].active = true;
             status.label = _this.infoLabel;
@@ -40419,17 +40497,23 @@ window.__require = function e(t, n, r) {
           }
         });
       };
-      __decorate([ property(cc.Sprite) ], SpineTest.prototype, "bgSprite", void 0);
-      __decorate([ property(cc.Label) ], SpineTest.prototype, "infoLabel", void 0);
-      __decorate([ property(cc.RichText) ], SpineTest.prototype, "infoRichText", void 0);
-      __decorate([ property(GraphicsProfile_1.default) ], SpineTest.prototype, "graphicsProfile", void 0);
-      __decorate([ property(cc.Node) ], SpineTest.prototype, "listContent", void 0);
-      __decorate([ property(cc.Node) ], SpineTest.prototype, "content", void 0);
-      __decorate([ property(cc.Button) ], SpineTest.prototype, "cameraButton", void 0);
-      SpineTest = __decorate([ ccclass ], SpineTest);
-      return SpineTest;
+      SpineDemo.prototype.message = function(text) {
+        this.messageLabel.string = text;
+        this.messageAnimation.play();
+      };
+      __decorate([ property(cc.Sprite) ], SpineDemo.prototype, "bgSprite", void 0);
+      __decorate([ property(cc.Label) ], SpineDemo.prototype, "infoLabel", void 0);
+      __decorate([ property(cc.RichText) ], SpineDemo.prototype, "infoRichText", void 0);
+      __decorate([ property(GraphicsProfile_1.default) ], SpineDemo.prototype, "graphicsProfile", void 0);
+      __decorate([ property(cc.Node) ], SpineDemo.prototype, "listContent", void 0);
+      __decorate([ property(cc.Node) ], SpineDemo.prototype, "content", void 0);
+      __decorate([ property(cc.Button) ], SpineDemo.prototype, "cameraButton", void 0);
+      __decorate([ property(cc.Animation) ], SpineDemo.prototype, "messageAnimation", void 0);
+      __decorate([ property(cc.Label) ], SpineDemo.prototype, "messageLabel", void 0);
+      SpineDemo = __decorate([ ccclass ], SpineDemo);
+      return SpineDemo;
     }(cc.Component);
-    exports.default = SpineTest;
+    exports.default = SpineDemo;
     function getAnimationNames(skeletonData) {
       return Object.keys(skeletonData.skeletonJson.animations).sort();
     }
@@ -40445,6 +40529,9 @@ window.__require = function e(t, n, r) {
       frame.name = f.name;
       frame.setTexture(tex);
       return frame;
+    }
+    function ctrlC(text) {
+      navigator.clipboard.writeText(text);
     }
     cc._RF.pop();
   }, {
@@ -43355,4 +43442,4 @@ window.__require = function e(t, n, r) {
     cc.RotateTo._reverse = true;
     cc._RF.pop();
   }, {} ]
-}, {}, [ "use_reversed_rotateTo", "FileDrop", "SpineDemo", "CurrencyGlobal", "I18nGlobal", "IframeGlobal", "LibGlobal", "ResizeGlobal", "StorageGlobal", "SlotAuto", "SlotAutoConfig", "SlotAutoContent", "CardBase", "CardFlip2", "CardsFlip2", "Alert", "AlphaCheckButton", "AnimatableProperty", "AnimationDelayPlay", "AnimationEventHandler", "AnimationWithAnimatableProperty", "Audio", "AudioAppend", "AutoRotation", "AutoToggleNode", "BezierPosition", "ButtonAudio", "ButtonInteractable", "CameraControl", "CollisionHandler", "CommonButton", "DefaultZIndex", "DragControl", "DragPoint", "GraphicsProfile", "GraphicsTable", "Handler", "I18nActive", "I18nLabel", "I18nManager", "I18nMeta", "I18nMetaActive", "I18nMetaFont", "I18nSprite", "IosHack", "ItemReusableScrollView", "KeyDownCtrl", "LayoutShrink", "LayoutShrinkLabel", "ListViewCtrl", "LoadAtlas", "LoadAtlasPageViewIndicator", "LoadAtlasSprite", "LoadScene", "LoadSceneConfig", "Loading", "LoopBackground", "Luzi", "LuziSource", "Mark", "Marquee", "Mask", "NetQuality", "NodeFollow", "NodeShrink", "NonePropagationComponent", "OnResizeManager", "OnResized", "PageViewIndicatorSprite", "ParentNode", "PersistRootNode", "Progress", "Record", "Repeat", "Road", "RoadSource", "Rotation", "Screenshot", "SpSkeletonConfig", "SpSkeletonHack", "SpSkeletonStatus", "SpriteFitWorldSize", "SpriteReload", "SpriteTiledHack", "SystemMenu", "SystemMenuConfig", "TemplateGenerator", "TextImage", "Toast", "TweenNode", "UIToggle", "UpdatePositionSlider", "WidgetSizeLimited", "WidgetWebView", "ColAnimation", "ColBase", "ColCallback", "ColComponentProperty", "ColDataBase", "ColEditBox", "ColFade", "ColFadeActive", "ColItemBase", "ColLabel", "ColLayout", "ColProperty", "ColPropertyEvent", "ColSlotUI", "ColSpSkeleton", "ColSpSkeleton2", "ColSpSkeletonAnimation", "ColSpine", "ColSprite", "ColSpriteFrame", "CommData", "JsonAssetLoader", "KeyAtlas", "KeyAudioClip", "KeyBitmapFont", "KeyCol", "KeyFrame", "KeyHandler", "KeyJsonAsset", "KeyNode", "KeyPrefab", "KeyStr", "LoginState", "NodeAction", "NodeTween", "PingData", "SpriteFrameData", "TableDataBase", "ToastData", "User", "WeakMapData", "InfoBase", "InfoConfigBase", "InfoLabel", "PrefabManager", "SlotInfo", "SlotInfoConfig", "ParticleProperty", "ParticleSystemBase", "MemberServiceBase", "RpcServiceBase", "CommunicationBase", "PromiseManager", "PromiseManager2", "PromiseUtil", "ResourcesCol", "ResourcesFont", "ResourcesImageAtlas", "ResourcesIndicator", "ResourcesInfoConfig", "ResourcesKeeper", "ResourcesLoader", "ResourcesLoaderAppend", "ResourcesMask", "ResourcesSprite", "SpriteFrameCache", "SpriteFrameCacheAppend", "SpriteFrameCacheAppend2", "SpriteFrameCacheSprite", "WebViewGlobal", "CiBase", "MonkeyBase", "BigWinBase", "CommonUI", "CommonUIData", "CommonUIManager", "CommonUIStyle", "CommonUIStyleCopy", "ForegroundBase", "InfoPage", "OptionPanel", "UIBase", "UIDataBase", "AutoPing", "CommListener", "Count", "ICCIinterface", "Utils", "Media", "NoSleep" ]);
+}, {}, [ "use_reversed_rotateTo", "FileDrop", "Hover", "SpineDemo", "CurrencyGlobal", "I18nGlobal", "IframeGlobal", "LibGlobal", "ResizeGlobal", "StorageGlobal", "SlotAuto", "SlotAutoConfig", "SlotAutoContent", "CardBase", "CardFlip2", "CardsFlip2", "Alert", "AlphaCheckButton", "AnimatableProperty", "AnimationDelayPlay", "AnimationEventHandler", "AnimationWithAnimatableProperty", "Audio", "AudioAppend", "AutoRotation", "AutoToggleNode", "BezierPosition", "ButtonAudio", "ButtonInteractable", "CameraControl", "CollisionHandler", "CommonButton", "DefaultZIndex", "DragControl", "DragPoint", "GraphicsProfile", "GraphicsTable", "Handler", "I18nActive", "I18nLabel", "I18nManager", "I18nMeta", "I18nMetaActive", "I18nMetaFont", "I18nSprite", "IosHack", "ItemReusableScrollView", "KeyDownCtrl", "LayoutShrink", "LayoutShrinkLabel", "ListViewCtrl", "LoadAtlas", "LoadAtlasPageViewIndicator", "LoadAtlasSprite", "LoadScene", "LoadSceneConfig", "Loading", "LoopBackground", "Luzi", "LuziSource", "Mark", "Marquee", "Mask", "NetQuality", "NodeFollow", "NodeShrink", "NonePropagationComponent", "OnResizeManager", "OnResized", "PageViewIndicatorSprite", "ParentNode", "PersistRootNode", "Progress", "Record", "Repeat", "Road", "RoadSource", "Rotation", "Screenshot", "SpSkeletonConfig", "SpSkeletonHack", "SpSkeletonStatus", "SpriteFitWorldSize", "SpriteReload", "SpriteTiledHack", "SystemMenu", "SystemMenuConfig", "TemplateGenerator", "TextImage", "Toast", "TweenNode", "UIToggle", "UpdatePositionSlider", "WidgetSizeLimited", "WidgetWebView", "ColAnimation", "ColBase", "ColCallback", "ColComponentProperty", "ColDataBase", "ColEditBox", "ColFade", "ColFadeActive", "ColItemBase", "ColLabel", "ColLayout", "ColProperty", "ColPropertyEvent", "ColSlotUI", "ColSpSkeleton", "ColSpSkeleton2", "ColSpSkeletonAnimation", "ColSpine", "ColSprite", "ColSpriteFrame", "CommData", "JsonAssetLoader", "KeyAtlas", "KeyAudioClip", "KeyBitmapFont", "KeyCol", "KeyFrame", "KeyHandler", "KeyJsonAsset", "KeyNode", "KeyPrefab", "KeyStr", "LoginState", "NodeAction", "NodeTween", "PingData", "SpriteFrameData", "TableDataBase", "ToastData", "User", "WeakMapData", "InfoBase", "InfoConfigBase", "InfoLabel", "PrefabManager", "SlotInfo", "SlotInfoConfig", "ParticleProperty", "ParticleSystemBase", "MemberServiceBase", "RpcServiceBase", "CommunicationBase", "PromiseManager", "PromiseManager2", "PromiseUtil", "ResourcesCol", "ResourcesFont", "ResourcesImageAtlas", "ResourcesIndicator", "ResourcesInfoConfig", "ResourcesKeeper", "ResourcesLoader", "ResourcesLoaderAppend", "ResourcesMask", "ResourcesSprite", "SpriteFrameCache", "SpriteFrameCacheAppend", "SpriteFrameCacheAppend2", "SpriteFrameCacheSprite", "WebViewGlobal", "CiBase", "MonkeyBase", "BigWinBase", "CommonUI", "CommonUIData", "CommonUIManager", "CommonUIStyle", "CommonUIStyleCopy", "ForegroundBase", "InfoPage", "OptionPanel", "UIBase", "UIDataBase", "AutoPing", "CommListener", "Count", "ICCIinterface", "Utils", "Media", "NoSleep" ]);
