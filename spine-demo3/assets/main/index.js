@@ -39622,10 +39622,10 @@ window.__require = function e(t, n, r) {
                 return [ 2 ];
               }
               is = ns.map(function(n) {
-                return SpSkeletonStatus_1.spSkeletonDuration(skeleton, n);
+                return SpSkeletonStatus_1.spSkeletonNameDuration(skeleton, n);
               });
               is.sort(function(a, b) {
-                return a - b;
+                return a.duration - b.duration;
               });
               lens = Utils_1.range(MAX).map(function() {
                 return 0;
@@ -39990,7 +39990,7 @@ window.__require = function e(t, n, r) {
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.getSkeletonMeshData = exports.spSkeletonInfo = exports.spSkeletonDuration = void 0;
+    exports.getSkeletonMeshData = exports.spSkeletonInfo = exports.spSkeletonNameDuration = void 0;
     var LibGlobal_1 = require("../LibGlobal");
     var Utils_1 = require("../utils/Utils");
     var GraphicsProfile_1 = require("./GraphicsProfile");
@@ -40050,12 +40050,15 @@ window.__require = function e(t, n, r) {
       return SpSkeletonStatus;
     }(cc.Component);
     exports.default = SpSkeletonStatus;
-    function spSkeletonDuration(ske, animation) {
+    function spSkeletonNameDuration(ske, animation) {
       var animationName = animation || ske.animation || ske.defaultAnimation;
       var duration = ske.findAnimation(animationName).duration;
-      return duration;
+      return {
+        duration: duration,
+        name: animationName
+      };
     }
-    exports.spSkeletonDuration = spSkeletonDuration;
+    exports.spSkeletonNameDuration = spSkeletonNameDuration;
     function spSkeletonInfo(ske, animation, logMissingRegions) {
       void 0 === logMissingRegions && (logMissingRegions = false);
       var animationName = animation || ske.animation || ske.defaultAnimation;
@@ -40295,6 +40298,7 @@ window.__require = function e(t, n, r) {
     var GraphicsProfile_1 = require("../submodule/game-client-lib/runtime-scripts/component/GraphicsProfile");
     var SpSkeletonHack_1 = require("../submodule/game-client-lib/runtime-scripts/component/SpSkeletonHack");
     var SpSkeletonStatus_1 = require("../submodule/game-client-lib/runtime-scripts/component/SpSkeletonStatus");
+    var UpdatePositionSlider_1 = require("../submodule/game-client-lib/runtime-scripts/component/UpdatePositionSlider");
     var LibGlobal_1 = require("../submodule/game-client-lib/runtime-scripts/LibGlobal");
     var Utils_1 = require("../submodule/game-client-lib/runtime-scripts/utils/Utils");
     var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
@@ -40318,12 +40322,18 @@ window.__require = function e(t, n, r) {
         _this.cacheMode = false;
         _this.timeScale = 1;
         _this.loop = true;
+        _this.play = true;
+        _this.ruler = true;
         _this.filter = "";
+        _this.skeletons = [];
         _this.debugSlots = false;
         _this.debugBones = false;
         _this.debugMesh = false;
         _this.messageAnimation = null;
         _this.messageLabel = null;
+        _this.slider = null;
+        _this.sliderLabel = null;
+        _this.sliderTimeout = null;
         return _this;
       }
       SpineDemo.prototype.onLoad = function() {
@@ -40335,6 +40345,7 @@ window.__require = function e(t, n, r) {
         this.listNames(ske.skeletonData);
         this.skeletonData = ske.skeletonData;
         this.apply();
+        LibGlobal_1.globalDebugNNN(this);
       };
       SpineDemo.prototype.onCameraButtonClick = function() {
         var label = this.cameraButton.getComponentInChildren(cc.Label);
@@ -40414,6 +40425,18 @@ window.__require = function e(t, n, r) {
         this.message("Copied: " + name);
         LibGlobal_1.log("Copied: " + name);
       };
+      SpineDemo.prototype.onPlayClick = function(toggle) {
+        var _this = this;
+        this.play = toggle.isChecked;
+        this.skeletons.forEach(function(ske) {
+          ske.paused = !_this.play;
+        });
+      };
+      SpineDemo.prototype.onRulerClick = function(toggle) {
+        this.ruler = toggle.isChecked;
+        this.bgSprite.node.children[0].active = this.ruler;
+        this.apply();
+      };
       SpineDemo.prototype.onFileDroped = function(files) {
         cc.dynamicAtlasManager.enabled = false;
         var textureNames = [];
@@ -40454,8 +40477,9 @@ window.__require = function e(t, n, r) {
           LibGlobal_1.log(names);
         }
       };
-      SpineDemo.prototype.apply = function() {
+      SpineDemo.prototype.apply = function(animationLastOrFrameIdx) {
         var _this = this;
+        void 0 === animationLastOrFrameIdx && (animationLastOrFrameIdx = 0);
         var skeletonData = this.skeletonData;
         var length = this.length;
         var premultipliedAlpha = this.premultipliedAlpha;
@@ -40464,6 +40488,7 @@ window.__require = function e(t, n, r) {
         var timeScale = this.timeScale;
         var p = this.content;
         var loop = this.loop;
+        var pause = !this.play;
         var debugSlots = this.debugSlots;
         var debugBones = this.debugBones;
         var debugMesh = this.debugMesh;
@@ -40471,7 +40496,7 @@ window.__require = function e(t, n, r) {
         var ns = getAnimationNames(skeletonData);
         var n = -1 === ns.indexOf(animation) ? ns[0] : animation;
         var m = cacheMode ? sp.Skeleton.AnimationCacheMode.SHARED_CACHE : sp.Skeleton.AnimationCacheMode.REALTIME;
-        Utils_1.range2(length).forEach(function(i) {
+        this.skeletons = Utils_1.range2(length).map(function(i) {
           var node = cc.instantiate(_this.template);
           var skeOld = node.getComponentInChildren(sp.Skeleton);
           var skep = skeOld.node.parent;
@@ -40480,12 +40505,13 @@ window.__require = function e(t, n, r) {
           ske.premultipliedAlpha = premultipliedAlpha;
           ske.timeScale = timeScale;
           ske.loop = loop;
+          ske.paused = pause;
           skep.addChild(ske.node);
           p.addChild(node);
           if (0 === i) {
             var status = ske.node.addComponent(SpSkeletonStatus_1.default);
-            node.children[0].active = true;
-            node.children[1].active = true;
+            node.children[0].active = _this.ruler;
+            node.children[1].active = _this.ruler;
             status.label = _this.infoLabel;
             status.richtext = _this.infoRichText;
             status.graphicsProfile = _this.graphicsProfile;
@@ -40493,13 +40519,63 @@ window.__require = function e(t, n, r) {
               ske.debugSlots = debugSlots;
               ske.debugBones = debugBones;
               ske.debugMesh = debugMesh;
+              if (!loop && animationLastOrFrameIdx) if (_this.cacheMode) {
+                var frames = ske._frameCache.frames;
+                var time = ske._frameCache.totalTime;
+                ske._accTime = animationLastOrFrameIdx / frames.length * time;
+                ske._curFrame = frames[animationLastOrFrameIdx];
+              } else {
+                ske._updateRealtime(animationLastOrFrameIdx);
+                ske.getCurrent(0).animationLast = animationLastOrFrameIdx;
+              }
             }, 0);
           }
+          return ske;
         });
+      };
+      SpineDemo.prototype.update = function(dt) {
+        var ske0 = this.skeletons[0];
+        var last;
+        var end;
+        if (this.cacheMode) {
+          var frames = ske0._frameCache.frames;
+          end = frames.length - 1;
+          last = frames.indexOf(ske0._curFrame);
+          this.sliderLabel.string = [ last, end ].join("/");
+        } else {
+          end = ske0.getCurrent(0).animationEnd;
+          last = ske0.getCurrent(0).animationLast;
+          this.sliderLabel.string = [ (Math.floor(100 * last) / 100).toFixed(2), Math.floor(100 * end) / 100 ].join("/");
+        }
+        this.sliderTimeout || this.slider.updateHandlePosition(last / end);
       };
       SpineDemo.prototype.message = function(text) {
         this.messageLabel.string = text;
         this.messageAnimation.play();
+      };
+      SpineDemo.prototype.onSliderChange = function(slider) {
+        var _this = this;
+        clearTimeout(this.sliderTimeout);
+        var progress = slider.progress;
+        var next = function() {
+          clearTimeout(_this.sliderTimeout);
+          _this.sliderTimeout = null;
+          _this.skeletons.forEach(function(ske) {
+            if (_this.cacheMode) {
+              var frames = ske._frameCache.frames;
+              var idx = Math.floor(frames.length * progress);
+              _this.loop ? ske._curFrame = frames[idx] : _this.apply(idx);
+            } else {
+              var end = ske.getCurrent(0).animationEnd;
+              var last = end * progress;
+              if (_this.loop) {
+                var skeLast = ske.getCurrent(0).animationLast;
+                ske._updateRealtime(last - skeLast);
+              } else _this.apply(last);
+            }
+          });
+        };
+        this.sliderTimeout = setTimeout(next, 200);
       };
       __decorate([ property(cc.Sprite) ], SpineDemo.prototype, "bgSprite", void 0);
       __decorate([ property(cc.Label) ], SpineDemo.prototype, "infoLabel", void 0);
@@ -40510,6 +40586,8 @@ window.__require = function e(t, n, r) {
       __decorate([ property(cc.Button) ], SpineDemo.prototype, "cameraButton", void 0);
       __decorate([ property(cc.Animation) ], SpineDemo.prototype, "messageAnimation", void 0);
       __decorate([ property(cc.Label) ], SpineDemo.prototype, "messageLabel", void 0);
+      __decorate([ property(UpdatePositionSlider_1.default) ], SpineDemo.prototype, "slider", void 0);
+      __decorate([ property(cc.Label) ], SpineDemo.prototype, "sliderLabel", void 0);
       SpineDemo = __decorate([ ccclass ], SpineDemo);
       return SpineDemo;
     }(cc.Component);
@@ -40540,6 +40618,7 @@ window.__require = function e(t, n, r) {
     "../submodule/game-client-lib/runtime-scripts/component/GraphicsProfile": "GraphicsProfile",
     "../submodule/game-client-lib/runtime-scripts/component/SpSkeletonHack": "SpSkeletonHack",
     "../submodule/game-client-lib/runtime-scripts/component/SpSkeletonStatus": "SpSkeletonStatus",
+    "../submodule/game-client-lib/runtime-scripts/component/UpdatePositionSlider": "UpdatePositionSlider",
     "../submodule/game-client-lib/runtime-scripts/utils/Utils": "Utils"
   } ],
   SpriteFitWorldSize: [ function(require, module, exports) {
