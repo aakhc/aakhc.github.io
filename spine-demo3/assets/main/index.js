@@ -40004,9 +40004,7 @@ window.__require = function e(t, n, r) {
         _this.richtext = null;
         _this.graphicsProfile = null;
         _this.skeleton = null;
-        _this.max = -Infinity;
-        _this.avgs = [];
-        _this.min = Infinity;
+        _this.updateTimes = [];
         _this.str = "";
         return _this;
       }
@@ -40030,15 +40028,16 @@ window.__require = function e(t, n, r) {
           var now = performance.now();
           update(dt);
           var diff = performance.now() - now;
-          _this.avgs.push(diff);
-          _this.avgs.length > 1e3 && _this.avgs.splice(0, _this.avgs.length - 1e3);
-          diff > _this.max && (_this.max = diff);
-          diff < _this.min && (_this.min = diff);
-          _this.label && (_this.label.string = _this.str + "\n" + [ _this.min.toFixed(3), (_this.avgs.reduce(Utils_1.sumReducer, 0) / _this.avgs.length).toFixed(3), _this.max.toFixed(3) ].join("/") + "ms");
-          if (_this.richtext) {
-            _this.richtext.string = _this.str + "\n" + [ _this.min.toFixed(3), (_this.avgs.reduce(Utils_1.sumReducer, 0) / _this.avgs.length).toFixed(3), _this.max.toFixed(3) ].join("/") + "ms";
-            var shrink = _this.richtext.getComponent(NodeShrink_1.default);
-            shrink && shrink.resize();
+          _this.updateTimes.push(diff);
+          _this.updateTimes.length > 1e3 && _this.updateTimes.splice(0, _this.updateTimes.length - 1e3);
+          if (_this.label || _this.richtext) {
+            var arr = _this.updateTimes.slice().sort();
+            var mins = arr.slice(0, 100);
+            var maxs = arr.slice(arr.length - 100);
+            var str = _this.str + "\n" + [ (mins.reduce(Utils_1.sumReducer, 0) / mins.length).toFixed(3), (_this.updateTimes.reduce(Utils_1.sumReducer, 0) / _this.updateTimes.length).toFixed(3), (maxs.reduce(Utils_1.sumReducer, 0) / maxs.length).toFixed(3) ].join("/") + " ms";
+            cc.renderer.device._stats.numIndices && (str += "\n" + cc.renderer.device._stats.numIndices + " indices");
+            _this.label && (_this.label.string = str);
+            _this.richtext && _this.richtext.string;
           }
           _this.graphicsProfile && _this.graphicsProfile.pushData(1e3 * diff);
         };
@@ -40329,6 +40328,7 @@ window.__require = function e(t, n, r) {
         _this.debugSlots = false;
         _this.debugBones = false;
         _this.debugMesh = false;
+        _this.enableBatch = false;
         _this.messageAnimation = null;
         _this.messageLabel = null;
         _this.slider = null;
@@ -40346,6 +40346,16 @@ window.__require = function e(t, n, r) {
         this.skeletonData = ske.skeletonData;
         this.apply();
         LibGlobal_1.globalDebugNNN(this);
+        var deviceDraw = cc.renderer.device.draw;
+        var resetDrawCalls = cc.renderer.device.resetDrawCalls;
+        cc.renderer.device.draw = function(_start, count) {
+          this._stats.numIndices += count;
+          deviceDraw.call(this, _start, count);
+        };
+        cc.renderer.device.resetDrawCalls = function() {
+          this._stats.numIndices = 0;
+          resetDrawCalls.call(this);
+        };
       };
       SpineDemo.prototype.onCameraButtonClick = function() {
         var label = this.cameraButton.getComponentInChildren(cc.Label);
@@ -40389,6 +40399,10 @@ window.__require = function e(t, n, r) {
       };
       SpineDemo.prototype.onDebugMeshClick = function(toggle) {
         this.debugMesh = toggle.isChecked;
+        this.apply();
+      };
+      SpineDemo.prototype.onEnableBatchClick = function(toggle) {
+        this.enableBatch = toggle.isChecked;
         this.apply();
       };
       SpineDemo.prototype.listNames = function(skeletonData, filter) {
@@ -40435,6 +40449,7 @@ window.__require = function e(t, n, r) {
       SpineDemo.prototype.onRulerClick = function(toggle) {
         this.ruler = toggle.isChecked;
         this.bgSprite.node.children[0].active = this.ruler;
+        this.graphicsProfile.node.active = this.ruler;
         this.apply();
       };
       SpineDemo.prototype.onFileDroped = function(files) {
@@ -40492,6 +40507,7 @@ window.__require = function e(t, n, r) {
         var debugSlots = this.debugSlots;
         var debugBones = this.debugBones;
         var debugMesh = this.debugMesh;
+        var enableBatch = this.enableBatch;
         p.removeAllChildren();
         var ns = getAnimationNames(skeletonData);
         var n = -1 === ns.indexOf(animation) ? ns[0] : animation;
@@ -40506,6 +40522,7 @@ window.__require = function e(t, n, r) {
           ske.timeScale = timeScale;
           ske.loop = loop;
           ske.paused = pause;
+          ske.enableBatch = enableBatch;
           skep.addChild(ske.node);
           p.addChild(node);
           if (0 === i) {
