@@ -40035,7 +40035,6 @@ window.__require = function e(t, n, r) {
             var mins = arr.slice(0, 100);
             var maxs = arr.slice(arr.length - 100);
             var str = _this.str + "\n" + [ (mins.reduce(Utils_1.sumReducer, 0) / mins.length).toFixed(3), (_this.updateTimes.reduce(Utils_1.sumReducer, 0) / _this.updateTimes.length).toFixed(3), (maxs.reduce(Utils_1.sumReducer, 0) / maxs.length).toFixed(3) ].join("/") + " ms";
-            cc.renderer.device._stats.numIndices && (str += "\n" + cc.renderer.device._stats.numIndices + " indices");
             _this.label && (_this.label.string = str);
             _this.richtext && _this.richtext.string;
           }
@@ -40312,10 +40311,12 @@ window.__require = function e(t, n, r) {
         _this.listContent = null;
         _this.content = null;
         _this.cameraButton = null;
+        _this.indicesLabel = null;
         _this.listTemplate = null;
         _this.template = null;
         _this.length = 1;
         _this.animation = "";
+        _this.animations = [];
         _this.skeletonData = null;
         _this.premultipliedAlpha = false;
         _this.cacheMode = false;
@@ -40356,6 +40357,37 @@ window.__require = function e(t, n, r) {
           this._stats.numIndices = 0;
           resetDrawCalls.call(this);
         };
+        cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+      };
+      SpineDemo.prototype.onKeyDown = function(event) {
+        var idx;
+        switch (event.keyCode) {
+         case cc.macro.KEY.z:
+          var cameras = this.node.getComponentsInChildren(cc.Camera);
+          var bg = cameras[0];
+          var ui = cameras[2];
+          var able = !bg.node.active;
+          bg.node.active = able;
+          ui.node.active = able;
+          break;
+
+         case cc.macro.KEY.x:
+          cc.debug.setDisplayStats(!cc.debug.isDisplayStats());
+          break;
+
+         case cc.macro.KEY.c:
+          this.indicesLabel.node.active = !this.indicesLabel.node.active;
+          break;
+
+         case cc.macro.KEY.n:
+          idx = this.animations.indexOf(this.animation);
+          this.updateAnimation(this.animations[idx + 1] || this.animations[0]);
+          break;
+
+         case cc.macro.KEY.b:
+          idx = this.animations.indexOf(this.animation);
+          this.updateAnimation(this.animations[idx - 1] || this.animations[this.animations.length - 1]);
+        }
       };
       SpineDemo.prototype.onCameraButtonClick = function() {
         var label = this.cameraButton.getComponentInChildren(cc.Label);
@@ -40412,7 +40444,7 @@ window.__require = function e(t, n, r) {
         p.removeAllChildren();
         var ns = getAnimationNames(skeletonData);
         var regex = new RegExp(filter);
-        return ns.map(function(n) {
+        var strs = ns.map(function(n) {
           if (filter && !regex.test(n)) return;
           var node = cc.instantiate(_this.listTemplate);
           var label = node.getComponentInChildren(cc.Label);
@@ -40427,8 +40459,13 @@ window.__require = function e(t, n, r) {
           p.addChild(node);
           return n;
         }).filter(Utils_1.identity);
+        this.animations = strs;
+        return strs;
       };
       SpineDemo.prototype.onClick = function(target, name) {
+        this.updateAnimation(name);
+      };
+      SpineDemo.prototype.updateAnimation = function(name) {
         this.animation = name;
         this.listNames(this.skeletonData, this.filter);
         this.message(name);
@@ -40565,6 +40602,7 @@ window.__require = function e(t, n, r) {
           this.sliderLabel.string = [ (Math.floor(100 * last) / 100).toFixed(2), Math.floor(100 * end) / 100 ].join("/");
         }
         this.sliderTimeout || this.slider.updateHandlePosition(last / end);
+        this.indicesLabel && cc.renderer.device._stats.numIndices && (this.indicesLabel.string = cc.renderer.device._stats.numIndices + " indices");
       };
       SpineDemo.prototype.message = function(text) {
         this.messageLabel.string = text;
@@ -40601,6 +40639,7 @@ window.__require = function e(t, n, r) {
       __decorate([ property(cc.Node) ], SpineDemo.prototype, "listContent", void 0);
       __decorate([ property(cc.Node) ], SpineDemo.prototype, "content", void 0);
       __decorate([ property(cc.Button) ], SpineDemo.prototype, "cameraButton", void 0);
+      __decorate([ property(cc.Label) ], SpineDemo.prototype, "indicesLabel", void 0);
       __decorate([ property(cc.Animation) ], SpineDemo.prototype, "messageAnimation", void 0);
       __decorate([ property(cc.Label) ], SpineDemo.prototype, "messageLabel", void 0);
       __decorate([ property(UpdatePositionSlider_1.default) ], SpineDemo.prototype, "slider", void 0);
