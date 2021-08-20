@@ -40312,6 +40312,7 @@ window.__require = function e(t, n, r) {
         _this.content = null;
         _this.cameraButton = null;
         _this.indicesLabel = null;
+        _this.lengthLabel = null;
         _this.listTemplate = null;
         _this.template = null;
         _this.length = 1;
@@ -40335,6 +40336,8 @@ window.__require = function e(t, n, r) {
         _this.slider = null;
         _this.sliderLabel = null;
         _this.sliderTimeout = null;
+        _this.indices = [];
+        _this.duration = 0;
         return _this;
       }
       SpineDemo.prototype.onLoad = function() {
@@ -40460,6 +40463,7 @@ window.__require = function e(t, n, r) {
           return n;
         }).filter(Utils_1.identity);
         this.animations = strs;
+        this.lengthLabel.string = (filter ? strs.length + "/" : "") + ns.length;
         return strs;
       };
       SpineDemo.prototype.onClick = function(target, name) {
@@ -40546,6 +40550,7 @@ window.__require = function e(t, n, r) {
         var debugMesh = this.debugMesh;
         var enableBatch = this.enableBatch;
         p.removeAllChildren();
+        this.indices.length = 0;
         var ns = getAnimationNames(skeletonData);
         var n = -1 === ns.indexOf(animation) ? ns[0] : animation;
         var m = cacheMode ? sp.Skeleton.AnimationCacheMode.SHARED_CACHE : sp.Skeleton.AnimationCacheMode.REALTIME;
@@ -40591,18 +40596,29 @@ window.__require = function e(t, n, r) {
         var ske0 = this.skeletons[0];
         var last;
         var end;
+        var frame;
         if (this.cacheMode) {
           var frames = ske0._frameCache.frames;
           end = frames.length - 1;
           last = frames.indexOf(ske0._curFrame);
           this.sliderLabel.string = [ last, end ].join("/");
+          frame = frames.length;
         } else {
           end = ske0.getCurrent(0).animationEnd;
           last = ske0.getCurrent(0).animationLast;
           this.sliderLabel.string = [ (Math.floor(100 * last) / 100).toFixed(2), Math.floor(100 * end) / 100 ].join("/");
+          frame = Math.ceil(60 * end);
         }
         this.sliderTimeout || this.slider.updateHandlePosition(last / end);
-        this.indicesLabel && cc.renderer.device._stats.numIndices && (this.indicesLabel.string = cc.renderer.device._stats.numIndices + " indices");
+        if (this.indicesLabel) {
+          var indices = cc.renderer.device._stats.numIndices;
+          if (indices) {
+            this.indices.push(indices);
+            this.indices.length > 3.5 * frame && this.indices.splice(0, this.indices.length - 3.5 * frame);
+            var smooth = (this.indices.reduce(Utils_1.sumReducer, 0) / this.indices.length).toFixed(0);
+            this.indicesLabel.string = indices + "/" + smooth + " indices";
+          }
+        }
       };
       SpineDemo.prototype.message = function(text) {
         this.messageLabel.string = text;
@@ -40640,6 +40656,7 @@ window.__require = function e(t, n, r) {
       __decorate([ property(cc.Node) ], SpineDemo.prototype, "content", void 0);
       __decorate([ property(cc.Button) ], SpineDemo.prototype, "cameraButton", void 0);
       __decorate([ property(cc.Label) ], SpineDemo.prototype, "indicesLabel", void 0);
+      __decorate([ property(cc.Label) ], SpineDemo.prototype, "lengthLabel", void 0);
       __decorate([ property(cc.Animation) ], SpineDemo.prototype, "messageAnimation", void 0);
       __decorate([ property(cc.Label) ], SpineDemo.prototype, "messageLabel", void 0);
       __decorate([ property(UpdatePositionSlider_1.default) ], SpineDemo.prototype, "slider", void 0);
