@@ -194,7 +194,7 @@ CocosCreator .fire Component 搜尋工具
             while(r) {
                 arr.unshift(r._name);
                 r = r._parent;
-                if (r.__type__== "cc.Scene"){
+                if (r && r.__type__== "cc.Scene"){
                     break;
                 }
             }
