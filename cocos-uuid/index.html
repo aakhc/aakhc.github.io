@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
-
+<head>
+    <title>CocosCreator uuid 工具</title>
+</head>
 <body>
     <div style="display:flex;">
         <div style="flex: 1;">
@@ -18,7 +20,7 @@ uuid v4 產生工具
         </div>
         <div style="flex: 1;">
             <pre>
-Cocos uuid 轉 .fire __type__ 工具
+CocosCreator uuid 轉 .fire __type__ 工具
 說明：
 - 在輸入框內輸入要轉換的 uuid
 - 使用 cocos creator v2.0.10 內的 compressUuid 方法
@@ -31,7 +33,7 @@ Cocos uuid 轉 .fire __type__ 工具
         </div>
         <div style="flex: 1;">
             <pre>
-Cocos .fire __type__ 轉 uuid 工具
+CocosCreator .fire __type__ 轉 uuid 工具
 說明：
 - 在輸入框內輸入要轉換的 .fire __type__，用 逗點(,) 分隔
 - 使用 cocos creator v2.0.10 內的 decompressUuid 方法
@@ -42,6 +44,22 @@ Cocos .fire __type__ 轉 uuid 工具
             </div>
         </div>
         
+    </div>
+    <hr>
+    <div style="display:flex;">
+        <div style="flex: 1;">
+            <pre>
+CocosCreator .fire Component 搜尋工具
+說明：
+- 在上方輸入框內輸入 .fire 檔的內容
+- 在下方輸入框內輸入 Component 的 名稱 或 uuid（有無 compress 皆可）
+    </pre>
+            <textarea id="i4" type="text" style="width: 90%;"></textarea>
+            <input id="i5" type="text" style="width: 90%;"></input>
+            <div style="display:flex;" >
+                <pre style="flex: 1;" id="code3"></pre>
+            </div>
+        </div>
     </div>
     <script>
         const n = /-/g;
@@ -142,6 +160,80 @@ Cocos .fire __type__ 轉 uuid 工具
             let arr = Array.from({length:v}).map(_=>uuidv4());
             str3.innerHTML = v && arr.join("\n")
             str4.innerHTML = v && arr.map(v => compressUuid(v,false)).join("\n")
+        })
+
+        var each = (x)=> {
+            for (var n in x) {
+                if (Array.isArray(x[n])) {
+                    x[n] = x[n].map(ref)
+                } else if (isObject(x[n])) {
+                    x[n] = ref(x[n])
+                }
+            }
+        }
+        function ref(x) {
+            if (x.__id__){
+                return xx[x.__id__]
+            } 
+            return x
+        }
+        function isObject(x) {
+            return (typeof x === "object" || typeof x === 'function') && (x !== null)
+        }
+        let i4 = document.querySelector("#i4")
+        let i5 = document.querySelector("#i5")
+        let code3 = document.querySelector("#code3")
+        var xx;
+        var regex;
+        let print = (x)=>{
+            var r = x.node;
+            var arr = [];
+            while(r) {
+                arr.unshift(r._name);
+                r = r._parent;
+                if (r.__type__== "cc.Scene"){
+                    break;
+                }
+            }
+            return (x.__type__).padEnd(30," ") + arr.join("/")
+        }
+        let draw = ()=>{
+            if (!xx){
+                return
+            }
+            code3.innerHTML = xx.filter((x)=>{
+                if (regex && !regex.test(x.__type__)){
+                    return false
+                }
+                return x.node
+            }).map(print).join("\n")
+        }
+        i4.addEventListener("keyup", function (ev) {
+            var v = ev.target.value
+            if (!v) {
+                return;
+            }
+            xx = JSON.parse(v);
+            xx.forEach(each)
+            console.log(xx);
+            draw()
+        })
+        i5.addEventListener("keyup", function (ev) {
+            let v = ev.target.value
+            if (v){
+                let str = v;
+                if (compressUuid(v,false) != v){
+                    str += "|"+compressUuid(v,false)
+                }
+                if (decompressUuid(v) != v){
+                    str += "|"+decompressUuid(v)
+                }
+                regex = new RegExp(str)
+            } else {
+                regex = null
+            }
+            console.log(regex)
+            draw()
         })
         document.body.addEventListener('dblclick', (el) => {
             if (el && el.target && el.target instanceof HTMLPreElement) {
