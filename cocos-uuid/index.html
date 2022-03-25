@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div style="display:flex;">
+        <div style="flex: 1;">
+            <pre>
+uuid v4 產生工具
+說明：
+- 在輸入框內輸入要產生的個數
+- 使用 github.com/uuidjs/uuid 的 uuid.v4() 方法
+        </pre>
+            <input id="i3" type="text" style="width: 90%;"></input>
+            <div style="display:flex;" >
+                <pre style="flex: 1;" id="str3"></pre>
+                <pre style="flex: 1;" id="str4"></pre>
+            </div>
+        </div>
+        <div style="flex: 1;">
+            <pre>
+Cocos uuid 轉 .fire __type__ 工具
+說明：
+- 在輸入框內輸入要轉換的 uuid
+- 使用 cocos creator v2.0.10 內的 compressUuid 方法
+    </pre>
+            <input id="i" type="text" style="width: 90%;"></input>
+            <div style="display:flex;" >
+                <pre style="flex: 1;" id="code1"></pre>
+                <!-- <pre style="flex: 1;" id="code2"></pre> -->
+            </div>
+        </div>
+        <div style="flex: 1;">
+            <pre>
+Cocos .fire __type__ 轉 uuid 工具
+說明：
+- 在輸入框內輸入要轉換的 .fire __type__，用 逗點(,) 分隔
+- 使用 cocos creator v2.0.10 內的 decompressUuid 方法
+        </pre>
+            <input id="i2" type="text" style="width: 90%;"></input>
+            <div style="display:flex;" >
+                <pre style="flex: 1;" id="str1"></pre>
+            </div>
+        </div>
+        
+    </div>
+    <script>
+        const n = /-/g;
+        const s = /^[0-9a-fA-F-]{36}$/;
+        const o = /^[0-9a-fA-F]{32}$/;
+        const t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        
+        /**
+         * cocos creator v2.0.10 內的 compressUuid 實現
+         * @example ```
+         * compressUuid('c254d038-7f61-46ca-9f8f-2e45c933f607', true)  // c2VNA4f2FGyp+PLkXJM/YH
+         * compressUuid('c254d038-7f61-46ca-9f8f-2e45c933f607', false) // c254dA4f2FGyp+PLkXJM/YH
+         * ```
+         */
+        function compressUuid(uuid, t = false) {
+            if (s.test(uuid)) {
+                uuid = uuid.replace(n, '');
+            } else if (!o.test(uuid)) {
+                return uuid;
+            }
+            const r = !0 === t ? 2 : 5;
+            return compressHex(uuid, r);
+        }
+        
+        function compressHex(e, r) {
+            const n = e.length;
+            let i = void 0 !== r ? r : n % 3;
+            const o = [];
+            const s = e.slice(0, i);
+            for (; i < n;) {
+                const u = parseInt(e[i], 16);
+                const a = parseInt(e[i + 1], 16);
+                const c = parseInt(e[i + 2], 16);
+                o.push(t[u << 2 | a >> 2]);
+                o.push(t[(3 & a) << 4 | c]);
+                i += 3;
+            }
+            return s + o.join('');
+        }
+        
+        // tslint:disable-next-line:prefer-array-literal
+        const r = new Array(128);
+        for (let i = 0; i < 128; i += 1) {
+            r[i] = 0;
+        }
+        for (let i = 0; i < 64; i += 1) {
+            r[t.charCodeAt(i)] = i;
+        }
+        function decompressUuid(e) {
+            if (23 === e.length) {
+                const t = [];
+                for (let i = 5; i < 23; i += 2) {
+                    const n = r[e.charCodeAt(i)];
+                    const s = r[e.charCodeAt(i + 1)];
+                    t.push((n >> 2).toString(16)),
+                        t.push(((3 & n) << 2 | s >> 4).toString(16)),
+                        t.push((15 & s).toString(16));
+                }
+                e = e.slice(0, 5) + t.join('');
+            } else {
+                if (22 !== e.length) {
+                    return e;
+                }
+                {
+                    const t = [];
+                    for (let i = 2; i < 22; i += 2) {
+                        const n = r[e.charCodeAt(i)];
+                        const s = r[e.charCodeAt(i + 1)];
+                        t.push((n >> 2).toString(16)),
+                            t.push(((3 & n) << 2 | s >> 4).toString(16)),
+                            t.push((15 & s).toString(16));
+                    }
+                    e = e.slice(0, 2) + t.join('');
+                }
+            }
+            return [e.slice(0, 8), e.slice(8, 12), e.slice(12, 16), e.slice(16, 20), e.slice(20)].join('-');
+        }
+    </script>
+    <script>
+        let i = document.querySelector("#i")
+        let code1 = document.querySelector("#code1")
+        i.addEventListener("keyup", function (ev) {
+            var v = ev.target.value;
+            code1.innerHTML = v && v.split(",").map(v => compressUuid(v,false)).join("\n");
+            // code2.innerHTML = v && v.split(",").map(v => compressUuid(v,true)).join("\n");
+        })
+        let i2 = document.querySelector("#i2")
+        let str1 = document.querySelector("#str1")
+        i2.addEventListener("keyup", function (ev) {
+            var v = ev.target.value;
+            str1.innerHTML = v && v.split(",").map(v => decompressUuid(v)).join("\n");
+        })
+        let i3 = document.querySelector("#i3")
+        let str3 = document.querySelector("#str3")
+        let str4 = document.querySelector("#str4")
+        i3.addEventListener("keyup", function (ev) {
+            var v = ev.target.value;
+            let arr = Array.from({length:v}).map(_=>uuidv4());
+            str3.innerHTML = v && arr.join("\n")
+            str4.innerHTML = v && arr.map(v => compressUuid(v,false)).join("\n")
+        })
+        document.body.addEventListener('dblclick', (el) => {
+            if (el && el.target && el.target instanceof HTMLPreElement) {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(el.target);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                el.stopPropagation();
+            }
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js" integrity="sha512-BCMqEPl2dokU3T/EFba7jrfL4FxgY6ryUh4rRC9feZw4yWUslZ3Uf/lPZ5/5UlEjn4prlQTRfIPYQkDrLCZJXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+
+</html>
