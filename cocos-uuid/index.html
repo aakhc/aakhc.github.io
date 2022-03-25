@@ -53,9 +53,11 @@ CocosCreator .fire Component 搜尋工具
 說明：
 - 在上方輸入框內輸入 .fire 檔的內容
 - 在下方輸入框內輸入 Component 的 名稱 或 uuid（有無 compress 皆可）
+- 勾選用 Component 排序
     </pre>
             <textarea id="i4" type="text" style="width: 90%;"></textarea>
             <input id="i5" type="text" style="width: 90%;"></input>
+            <br><input id="i6" type="checkbox"></input>
             <div style="display:flex;" >
                 <pre style="flex: 1;" id="code3"></pre>
             </div>
@@ -185,6 +187,7 @@ CocosCreator .fire Component 搜尋工具
         let code3 = document.querySelector("#code3")
         var xx;
         var regex;
+        let sort;
         let print = (x)=>{
             var r = x.node;
             var arr = [];
@@ -201,12 +204,16 @@ CocosCreator .fire Component 搜尋工具
             if (!xx){
                 return
             }
-            code3.innerHTML = xx.filter((x)=>{
+            let xs = xx.filter((x)=>{
                 if (regex && !regex.test(x.__type__)){
                     return false
                 }
                 return x.node
-            }).map(print).join("\n")
+            }).map(print)
+            if (sort){
+                xs.sort()
+            }
+            code3.innerHTML = xs.join("\n")
         }
         i4.addEventListener("keyup", function (ev) {
             var v = ev.target.value
@@ -233,6 +240,11 @@ CocosCreator .fire Component 搜尋工具
                 regex = null
             }
             console.log(regex)
+            draw()
+        })
+        i6.addEventListener("change", function (ev) {
+            sort = ev.target.checked
+            console.log(sort)
             draw()
         })
         document.body.addEventListener('dblclick', (el) => {
