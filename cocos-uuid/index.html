@@ -23,7 +23,7 @@ uuid v4 產生工具
 CocosCreator uuid 轉 .fire __type__ 工具
 說明：
 - 在輸入框內輸入要轉換的 uuid
-- 使用 cocos creator v2.0.10 內的 compressUuid 方法
+- 使用 CocosCreator v2.0.10 內的 compressUuid 方法
     </pre>
             <input id="i" type="text" style="width: 90%;"></input>
             <div style="display:flex;" >
@@ -36,7 +36,7 @@ CocosCreator uuid 轉 .fire __type__ 工具
 CocosCreator .fire __type__ 轉 uuid 工具
 說明：
 - 在輸入框內輸入要轉換的 .fire __type__，用 逗點(,) 分隔
-- 使用 cocos creator v2.0.10 內的 decompressUuid 方法
+- 使用 CocosCreator v2.0.10 內的 decompressUuid 方法
         </pre>
             <input id="i2" type="text" style="width: 90%;"></input>
             <div style="display:flex;" >
@@ -52,11 +52,13 @@ CocosCreator .fire __type__ 轉 uuid 工具
 CocosCreator .fire Component 搜尋工具
 說明：
 - 在上方輸入框內輸入 .fire 檔的內容
+- 在中間輸入框內輸入 uuid 對應表（可選），可改變顯示名稱，格式為 uuid:名稱，多筆資料換行
 - 在下方輸入框內輸入 Component 的 名稱 或 uuid（有無 compress 皆可）
 - 勾選用 Component 排序
     </pre>
             <textarea id="i4" type="text" style="width: 90%;"></textarea>
-            <input id="i5" type="text" style="width: 90%;"></input>
+            <textarea id="i7" type="text" style="width: 80%;height: 15px;"></textarea>
+            <input id="i5" type="text" style="width: 80%;"></input>
             <br><input id="i6" type="checkbox"></input>
             <div style="display:flex;" >
                 <pre style="flex: 1;" id="code3"></pre>
@@ -186,8 +188,10 @@ CocosCreator .fire Component 搜尋工具
         let i5 = document.querySelector("#i5")
         let code3 = document.querySelector("#code3")
         var xx;
+        var map;
         var regex;
         let sort;
+        let childrenIndex;
         let print = (x)=>{
             var r = x.node;
             var arr = [];
@@ -198,17 +202,32 @@ CocosCreator .fire Component 搜尋工具
                     break;
                 }
             }
-            return (x.__type__).padEnd(30," ") + arr.join("/")
+            let type = x.__type__;
+            if (map && map[type]){
+                type = map[type]
+            }
+            
+            return (type).padEnd(30," ") + arr.join("/")
         }
         let draw = ()=>{
             if (!xx){
                 return
             }
             let xs = xx.filter((x)=>{
-                if (regex && !regex.test(x.__type__)){
+                if (!x.node){
                     return false
                 }
-                return x.node
+                if (regex){
+                    if (map && map[x.__type__] && regex.test(map[x.__type__])){
+                        return true
+                    } else if (regex.test(x.__type__)){
+                        return true
+                    } else {
+                        return false
+                    }
+                } else {
+                    return true
+                }
             }).map(print)
             if (sort){
                 xs.sort()
@@ -225,15 +244,43 @@ CocosCreator .fire Component 搜尋工具
             console.log(xx);
             draw()
         })
+        i7.addEventListener("keyup", function (ev) {
+            let v = ev.target.value
+            if (v){
+                map = {};
+                v.split("\n").forEach((s)=>{
+                    let [uuid, name] = s.split(":")
+                    map[uuid] = name;
+                    map[name] = uuid;
+                    let uuid1 = compressUuid(uuid,false);
+                    let uuid2 = compressUuid(uuid,false);
+                    if (uuid1 != uuid){
+                        map[uuid1] = name;
+                        map[name] = uuid1;
+                    }
+                    if (uuid2 != uuid){
+                        map[uuid2] = name;
+                        map[name] = uuid2;
+                    }
+                })
+            } else {
+                map = null
+            }
+            console.log(map)
+            draw()
+        })
         i5.addEventListener("keyup", function (ev) {
             let v = ev.target.value
             if (v){
                 let str = v;
                 if (compressUuid(v,false) != v){
-                    str += "|"+compressUuid(v,false)
+                    str += "|"+compressUuid(v,false);
                 }
                 if (decompressUuid(v) != v){
-                    str += "|"+decompressUuid(v)
+                    str += "|"+decompressUuid(v);
+                }
+                if (map && map[v]) {
+                    str += "|"+map[v];
                 }
                 regex = new RegExp(str)
             } else {
