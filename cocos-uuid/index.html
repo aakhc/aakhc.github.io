@@ -53,13 +53,13 @@ CocosCreator .fire Component 搜尋工具
 說明：
 - 在上方輸入框內輸入 .fire 檔的內容
 - 在中間輸入框內輸入 uuid 對應表（可選），可改變顯示名稱，格式為 uuid:名稱，多筆資料換行
-- 在下方輸入框內輸入 Component 的 名稱 或 uuid（有無 compress 皆可）
-- 勾選用 Component 排序
+- 在下方輸入框內輸入 Component 的 名稱 / uuid（有無 compress 皆可）/ .fire 內的 _id
+- 勾選第一個用 類型 排序，勾選第二個用 路徑 排序
     </pre>
             <textarea id="i4" type="text" style="width: 90%;"></textarea>
-            <textarea id="i7" type="text" style="width: 80%;height: 15px;"></textarea>
-            <input id="i5" type="text" style="width: 80%;"></input>
-            <br><input id="i6" type="checkbox"></input>
+            <textarea id="i5" type="text" style="width: 80%;height: 15px;"></textarea>
+            <input id="i6" type="text" style="width: 80%;"></input>
+            <br><input style="margin-right: 215px;" id="i7" type="checkbox"></input><input id="i8" type="checkbox"></input>
             <div style="display:flex;" >
                 <pre style="flex: 1;" id="code3"></pre>
             </div>
@@ -186,14 +186,30 @@ CocosCreator .fire Component 搜尋工具
         }
         let i4 = document.querySelector("#i4")
         let i5 = document.querySelector("#i5")
+        let i6 = document.querySelector("#i6")
         let code3 = document.querySelector("#code3")
         var xx;
         var map;
         var regex;
-        let sort;
+        let sortByType;
+        let sortByPath;
         let childrenIndex;
+        let gr = (type, x)=>{
+            switch(type){
+                case "cc.Node":
+                    return x
+                // case "cc.PrefabInfo":
+                //     return x.root;
+                // case "cc.ClickEvent":
+                //     return x.target
+                default:
+                    return x.node;
+            }
+        }
         let print = (x)=>{
-            var r = x.node;
+            let type = x.__type__;
+            let __id__ = xx.indexOf(x)
+            var r = gr(type, x);
             var arr = [];
             while(r) {
                 arr.unshift(r._name);
@@ -202,18 +218,27 @@ CocosCreator .fire Component 搜尋工具
                     break;
                 }
             }
-            let type = x.__type__;
+           
             if (map && map[type]){
                 type = map[type]
             }
+            // if (type == "cc.ClickEvent"){
+            //     arr.push(`(${(map && map[x._componentId]) || x._componentId}.${x.handler})`)
+            // }
+            if (!arr) {
+                arr = [__id__]
+            }
             
-            return (type).padEnd(30," ") + arr.join("/")
+            return {__id__ , type,  path:arr.join("/")}
         }
         let draw = ()=>{
             if (!xx){
                 return
             }
             let xs = xx.filter((x)=>{
+                if (regex && regex.test(x._id)){
+                    return true
+                }
                 if (!x.node){
                     return false
                 }
@@ -229,10 +254,21 @@ CocosCreator .fire Component 搜尋工具
                     return true
                 }
             }).map(print)
-            if (sort){
-                xs.sort()
+            if (sortByType || sortByPath){
+                xs.sort((a, b)=> {
+                    if (sortByType){
+                        let eq = a.type.localeCompare(b.type)
+                        if (eq != 0){
+                            return eq
+                        }
+                    }
+                    if (sortByPath){
+                        return a.path.localeCompare(b.path)
+                    }
+                    return 0;
+                })
             }
-            code3.innerHTML = xs.join("\n")
+            code3.innerHTML = xs.map(o=> `${o.type.padEnd(30," ")}${o.path}`).join("\n")
         }
         i4.addEventListener("keyup", function (ev) {
             var v = ev.target.value
@@ -244,7 +280,7 @@ CocosCreator .fire Component 搜尋工具
             console.log(xx);
             draw()
         })
-        i7.addEventListener("keyup", function (ev) {
+        i5.addEventListener("keyup", function (ev) {
             let v = ev.target.value
             if (v){
                 map = {};
@@ -269,7 +305,7 @@ CocosCreator .fire Component 搜尋工具
             console.log(map)
             draw()
         })
-        i5.addEventListener("keyup", function (ev) {
+        i6.addEventListener("keyup", function (ev) {
             let v = ev.target.value
             if (v){
                 let str = v;
@@ -289,9 +325,14 @@ CocosCreator .fire Component 搜尋工具
             console.log(regex)
             draw()
         })
-        i6.addEventListener("change", function (ev) {
-            sort = ev.target.checked
-            console.log(sort)
+        i7.addEventListener("change", function (ev) {
+            sortByType = ev.target.checked
+            console.log(sortByType)
+            draw()
+        })
+        i8.addEventListener("change", function (ev) {
+            sortByPath = ev.target.checked
+            console.log(sortByPath)
             draw()
         })
         document.body.addEventListener('dblclick', (el) => {
