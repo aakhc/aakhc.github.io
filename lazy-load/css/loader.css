@@ -1,0 +1,240 @@
+body,
+canvas,
+div {
+  display: block;
+  outline: 0;
+  -webkit-tap-highlight-color: transparent;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -khtml-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background-color: #000;
+}
+
+#Cocos2dGameContainer {
+  position: fixed;
+  margin: 0;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+}
+
+canvas {
+  width: 0%;
+  height: 0%;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+iframe#gameIframe {
+  width: 100%;
+  height: 100vh;
+  display: block;
+  z-index: 100;
+}
+
+iframe#gameIframe.show {
+  z-index: 100;
+  display: block;
+}
+
+iframe#bonusIframe {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 110;
+  display: none;
+}
+
+iframe#bonusIframe.show {
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 110;
+  background:transparent;
+}
+
+div#wrapBetIframe {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 99999999999;
+  background-color: #303030;
+  top: 0;
+  left: 0;
+  display: none;
+}
+
+div#wrapBetIframe.show {
+  display: block;
+}
+
+iframe#betIframe {
+  width: 100%;
+  height: 100%;
+}
+
+.close-betIframe {
+  position: absolute;
+  right: 32px;
+  top: 32px;
+  width: 32px;
+  height: 32px;
+  opacity: 0.8;
+}
+
+.close:hover {
+  opacity: 1;
+}
+
+.close:before,
+.close:after {
+  position: absolute;
+  left: 15px;
+  content: " ";
+  height: 33px;
+  width: 2px;
+  background-color: #fff;
+}
+
+.close:before {
+  transform: rotate(45deg);
+}
+
+.close:after {
+  transform: rotate(-45deg);
+}
+
+/*手機版全螢幕*/
+
+.fullscreen.hide {
+  z-index: -10;
+  display: none !important;
+}
+
+/*Android手機版全螢幕*/
+
+.fullscreenAndroid {
+  height: 100vh;
+  width: 100%;
+  display: block;
+  overflow: hidden;
+  opacity: 0;
+  background-color: black;
+  position: fixed;
+  z-index: 150;
+  bottom: 0;
+}
+
+.fullscreenAndroid.hide {
+  z-index: -10;
+  display: none !important;
+}
+
+.full-size {
+  position: fixed;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.close-fullscreen-btn {
+  width: 26px;
+  height: 26px;
+  border: 2px solid #fff;
+  background-color: #272330;
+  border-radius: 50%;
+  position: fixed;
+  top: 25px;
+  right: 25px;
+}
+
+.close-fullscreen-btn::before,
+.close-fullscreen-btn::after {
+  position: absolute;
+  top: 10px;
+  left: 4.5px;
+  width: 13px;
+  height: 3px;
+  content: "";
+  background-color: #fff;
+}
+
+.close-fullscreen-btn::before {
+  -ms-transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+.close-fullscreen-btn::after {
+  -ms-transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.close-fullscreen-btn:hover {
+  cursor: pointer;
+}
+
+.close-fullscreen-btn:hover::before,
+.x:hover::after {
+  display: block;
+}
+
+/*竖屏*/
+
+@media only screen and (orientation: portrait) {
+  .fullscreen {
+    height: 100vh;
+    width: 100%;
+    visibility: visible;
+    display: block;
+    overflow: hidden;
+    opacity: 0.85;
+    background: #000000;
+    position: fixed;
+    z-index: 150;
+    top: 0;
+    bottom: 0;
+    background-repeat: no-repeat;
+    background-position: center 40%;
+    background-size: 70%;
+  }
+}
+
+/*横屏*/
+
+@media only screen and (orientation: landscape) {
+  .fullscreen {
+    height: 100vh;
+    width: 100%;
+    visibility: visible;
+    display: block;
+    overflow: hidden;
+    opacity: 0.85;
+    background: #000000;
+    position: fixed;
+    z-index: 150;
+    top: 0;
+    bottom: 0;
+    background-repeat: no-repeat;
+    background-position: center 20%;
+    background-size: 30%;
+  }
+}

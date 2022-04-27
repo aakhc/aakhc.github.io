@@ -1,0 +1,121 @@
+/*手機版直轉橫*/
+
+.landscape {
+  background: #000000;
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 9991;
+}
+
+.landscape.forceHide {
+  display: none !important;
+  visibility: hidden !important;
+  border: 5px solid red;
+}
+
+/*手機版直轉橫*/
+
+.landscape img {
+  position: relative;
+  width: 90%;
+  height: auto;
+  margin-left: 5%;
+  margin-right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* slot不顯示橫屏提示 */
+
+.landscape.hide {
+  display: none !important;
+}
+
+body {
+  height: 150%;
+}
+
+/*minify size, 1 橫的以高度為主*/
+
+@media (orientation: landscape) {
+  @media only screen {
+    .landscape {
+      display: none;
+    }
+  }
+}
+
+/*minify size, 2 直的以寬度為主*/
+
+@media (orientation: portrait) {
+  @media only screen {
+    .landscape {
+      display: block;
+    }
+  }
+}
+
+
+/*手機版橫轉直*/
+
+.portrait {
+  background: #000000;
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 9991;
+}
+
+.portrait.forceHide {
+  display: none !important;
+  visibility: hidden !important;
+  border: 5px solid red;
+}
+
+/*手機版直轉橫*/
+
+.portrait img {
+  position: relative;
+  width: auto;
+  height: 90%;
+  margin-top: 5%;
+  margin-bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* slot不顯示橫屏提示 */
+
+.portrait.hide {
+  display: none !important;
+}
+
+/*minify size, 1 橫的以高度為主*/
+
+@media (orientation: landscape) {
+  @media only screen {
+    .portrait {
+      display: block;
+    }
+  }
+}
+
+/*minify size, 2 直的以寬度為主*/
+
+@media (orientation: portrait) {
+  @media only screen {
+    .portrait {
+      display: none;
+      
+    }
+  }
+}
+
+.out {
+  position: absolute;
+  left: 200000px;
+  top: 200000px;
+}

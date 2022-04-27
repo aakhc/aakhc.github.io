@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+    <link href="css/loader.css" rel="stylesheet" type="text/css" />
+    <link href="css/dra-loading.css" rel="stylesheet" type="text/css" />
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+    <div id="landscape" class="landscape out">
+        <img loading="lazy" src="img/landscape.gif">
+    </div>
+    
+
+</body>
+<script>
+    setTimeout(()=>{
+        var landscape = document.getElementById("landscape")
+        landscape.classList.remove("out");
+    }, 2e3)
+</script>
+
+</html>

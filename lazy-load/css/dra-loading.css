@@ -1,0 +1,176 @@
+html,
+body {
+  width: 100%;
+  height: auto;
+  scroll-behavior: smooth;
+  margin: 0;
+}
+
+.logo-wrap {
+  width: 550px;
+  height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+.company-logo {
+  width: 80%;
+  height: 20%;
+  background: no-repeat center;
+  -webkit-background-size: contain;
+  background-size: contain;
+  display: none;
+}
+
+.default-show {
+  display: block;
+}
+
+.game-logo {
+  width: 100%;
+  height: 60%;
+  background: no-repeat center;
+  -webkit-background-size: contain;
+  background-size: contain;
+}
+
+.loading_bg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: no-repeat center;
+  background-size: cover;
+}
+
+.loading_frame {
+  display: flex;
+  align-items: center;
+  height: 25px;
+  -webkit-background-size: contain;
+  background-size: contain;
+  position: relative;
+  background-repeat: no-repeat;
+  margin-top: 10px;
+  padding: 0 1.8%;
+  background-position-y: 2px;
+  box-sizing: border-box;
+}
+
+.loading_filled {
+  -webkit-transition: width 1s;
+  /* Safari */
+  transition: width 1s;
+  min-width: 10px;
+  background-position: left;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 0px 3px 3px #dd8936;
+  display: none;
+}
+
+.dra-loading {
+  width: 100%;
+  height: 100vh;
+  background-color: #020104;
+  position: fixed;
+  z-index: 9992;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-msg {
+  font-size: 25px;
+  font-weight: bold;
+  word-break: break-word;
+  font-family: Helvetica, Verdana, Arial, sans-serif;
+  text-align: center;
+  display: inline-block;
+  width: 100%;
+  height: 70px;
+}
+
+.logo-wrap.center-logo {
+  top: auto;
+}
+
+/*minify size, 1 橫的以高度為主*/
+
+@media (orientation: landscape) {
+  @media only screen and (max-height: 680px) {
+    .logo-wrap {
+      width: 450px;
+      height: 525px;
+    }
+    .loading-msg {
+      width: 100%;
+    }
+  }
+  @media only screen and (max-height: 415px) {
+    .company-logo {
+      width: 55%;
+      height: 12%;
+    }
+    .game-logo {
+      width: 65%;
+      height: 50%;
+    }
+    .logo-wrap {
+      width: 300px;
+      height: 358px;
+      position: fixed;
+      top: 1%;
+    }
+    .loading-msg {
+      width: 100%;
+      height: 45px;
+      display: inline-block;
+      font-size: 12px;
+    }
+  }
+  .dra-loading-extra11 {
+    width: 100vmin;
+    height: 100vmax;
+    transform-origin: top left;
+    transform: rotate(90deg) translate(0, -100vmax);
+  }
+  .dra-loading-extra11 .logo-wrap {
+    position: static;
+    top: auto;
+  }
+}
+
+/*minify size, 2 直的以寬度為主*/
+
+@media (orientation: portrait) {
+  @media only screen and (max-width: 768px) {
+    .logo-wrap {
+      width: 350px;
+      height: 580px;
+    }
+    .loading-msg {
+      width: 100%;
+      font-size: 18px;
+    }
+  }
+  @media only screen and (max-width: 680px) {
+    .company-logo {
+      height: 20%;
+    }
+    .game-logo {
+      height: 50%;
+    }
+    .logo-wrap {
+      width: 300px;
+      height: 450px;
+    }
+    .loading-msg {
+      width: 100%;
+    }
+  }
+}
