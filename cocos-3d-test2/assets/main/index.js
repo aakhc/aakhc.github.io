@@ -1424,8 +1424,8 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
           var nodePos = uit.convertToNodeSpaceAR(v3(loc.x, loc.y)); // let c: Camera
           // c.screenToWorld()
 
-          var worldPos = uit.convertToWorldSpaceAR(nodePos); // console.log(nodePos, worldPos)
-          // let wp = v3(640, 360, 0)
+          var worldPos = uit.convertToWorldSpaceAR(nodePos);
+          console.log(loc, nodePos, worldPos); // let wp = v3(640, 360, 0)
 
           var hits = this.test(worldPos);
           hits.forEach(function (node) {
@@ -1457,10 +1457,10 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
               // box.shape.getAABB(aabb)
               var bounds = box.worldBounds.clone();
               var inter = geometry.intersect.rayAABB(ray, bounds);
+              console.log(ray, bounds, mesh, inter);
               return inter; // } else if (sphere){
               //     sphere.shape.get
             } // let inter = geometry.intersect.rayMesh(ray, mesh);
-            // console.log(ray, bounds, mesh, inter)
 
           });
           console.log(hits.length);
