@@ -1286,10 +1286,10 @@ System.register("chunks:///_virtual/main", ['./Bullet.ts', './BulletCollider.ts'
   };
 });
 
-System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Bullet.ts', './UIFollower.ts'], function (exports) {
+System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './UIFollower.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Node, PhysicsSystem, NodeEventType, UITransform, v3, SkeletalAnimation, Label, geometry, SkinnedMeshRenderer, Collider, Component, Bullet, UIFollower;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Node, PhysicsSystem, NodeEventType, UITransform, v3, SkeletalAnimation, Label, geometry, SkinnedMeshRenderer, Collider, Component, UIFollower;
 
   return {
     setters: [function (module) {
@@ -1311,8 +1311,6 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
       SkinnedMeshRenderer = module.SkinnedMeshRenderer;
       Collider = module.Collider;
       Component = module.Component;
-    }, function (module) {
-      Bullet = module.Bullet;
     }, function (module) {
       UIFollower = module.UIFollower;
     }],
@@ -1344,6 +1342,9 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
 
           _initializerDefineProperty(_this, "touchNode", _descriptor4, _assertThisInitialized(_this));
 
+          _this.touching = false;
+          _this.touchEvent = null;
+          _this.delta = 0;
           return _this;
         }
 
@@ -1353,8 +1354,8 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
           window.main = this;
           PhysicsSystem.instance.enable = true;
           this.touchNode.on(NodeEventType.TOUCH_START, this.onTouchStart, this);
-          this.touchNode.on(NodeEventType.TOUCH_MOVE, this.onTouchStart, this); // this.touchNode.on(NodeEventType.MOUSE_DOWN, this.onTouchStart, this);
-          // this.touchNode.on(NodeEventType.TOUCH_END, callback, this);
+          this.touchNode.on(NodeEventType.TOUCH_MOVE, this.onTouchStart, this);
+          this.touchNode.on(NodeEventType.TOUCH_END, this.onTouchEnd, this); // this.touchNode.on(NodeEventType.TOUCH_END, callback, this);
           // return
           // this.templates = this.node.children.slice(0)
           // this.templates.forEach((node)=>{
@@ -1416,6 +1417,17 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
         ;
 
         _proto.onTouchStart = function onTouchStart(event) {
+          this.touching = true;
+          this.touchEvent = event;
+          this.onTouched(event);
+        };
+
+        _proto.onTouchEnd = function onTouchEnd(event) {
+          this.touching = false;
+          this.touchEvent = null;
+        };
+
+        _proto.onTouched = function onTouched(event) {
           // console.log(event)
           var loc = event.getUILocation(); // debugger
           // console.log(x,y)
@@ -1468,7 +1480,15 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
         };
 
         _proto.update = function update(dt) {
-          // let rotate = dt * .1
+          this.delta += dt;
+
+          if (this.delta >= .1) {
+            this.delta -= .1;
+
+            if (this.touching && this.touchEvent) {
+              this.onTouched(this.touchEvent);
+            }
+          } // let rotate = dt * .1
           // let q: Quat = new Quat()
           // this.skeAnimations.forEach((a) => {
           //     let node = a.node
@@ -1478,16 +1498,16 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
           //     q.
           // })
           // if (this.uiNode){
-          var fishNodes = this.fishParent.children;
-          var bulletNodes = this.bulletParent.children;
-          var collision = [];
-          bulletNodes.forEach(function (bulletNode) {
-            var bullet = bulletNode.getComponent(Bullet);
-          });
-
-          if (collision.length) {
-            console.log(collision);
-          } // box.boundingSphere
+          // let fishNodes = this.fishParent.children
+          // let bulletNodes = this.bulletParent.children
+          // let collision: [Fish, Bullet][] = []
+          // bulletNodes.forEach((bulletNode) => {
+          //     let bullet = bulletNode.getComponent(Bullet)
+          // })
+          // if (collision.length) {
+          //     console.log(collision)
+          // }
+          // box.boundingSphere
           // console.log(this.node.worldPosition)
           // // this.node.wor
           // let p = box.worldBounds.center
