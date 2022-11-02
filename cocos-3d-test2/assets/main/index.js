@@ -1289,7 +1289,7 @@ System.register("chunks:///_virtual/main", ['./Bullet.ts', './BulletCollider.ts'
 System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './UIFollower.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Node, PhysicsSystem, NodeEventType, UITransform, v3, SkeletalAnimation, Label, geometry, SkinnedMeshRenderer, Collider, Component, UIFollower;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Node, Camera, PhysicsSystem, NodeEventType, geometry, Label, SkinnedMeshRenderer, Collider, Component, UIFollower;
 
   return {
     setters: [function (module) {
@@ -1301,13 +1301,11 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
       Node = module.Node;
+      Camera = module.Camera;
       PhysicsSystem = module.PhysicsSystem;
       NodeEventType = module.NodeEventType;
-      UITransform = module.UITransform;
-      v3 = module.v3;
-      SkeletalAnimation = module.SkeletalAnimation;
-      Label = module.Label;
       geometry = module.geometry;
+      Label = module.Label;
       SkinnedMeshRenderer = module.SkinnedMeshRenderer;
       Collider = module.Collider;
       Component = module.Component;
@@ -1315,13 +1313,13 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
       UIFollower = module.UIFollower;
     }],
     execute: function () {
-      var _dec, _dec2, _dec3, _dec4, _dec5, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
+      var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5;
 
       cclegacy._RF.push({}, "0766cWd8LZCdpXdQZFTYjdA", "Main", undefined);
 
       var ccclass = _decorator.ccclass,
           property = _decorator.property;
-      var Main = exports('Main', (_dec = ccclass('Main'), _dec2 = property(Node), _dec3 = property(Node), _dec4 = property(Node), _dec5 = property(Node), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
+      var Main = exports('Main', (_dec = ccclass('Main'), _dec2 = property(Node), _dec3 = property(Node), _dec4 = property(Node), _dec5 = property(Camera), _dec6 = property(Node), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
         _inheritsLoose(Main, _Component);
 
         function Main() {
@@ -1340,7 +1338,9 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
 
           _initializerDefineProperty(_this, "cameraRefNode", _descriptor3, _assertThisInitialized(_this));
 
-          _initializerDefineProperty(_this, "touchNode", _descriptor4, _assertThisInitialized(_this));
+          _initializerDefineProperty(_this, "camera", _descriptor4, _assertThisInitialized(_this));
+
+          _initializerDefineProperty(_this, "touchNode", _descriptor5, _assertThisInitialized(_this));
 
           _this.touching = false;
           _this.touchEvent = null;
@@ -1352,7 +1352,9 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
 
         _proto.onLoad = function onLoad() {
           window.main = this;
-          PhysicsSystem.instance.enable = true;
+          PhysicsSystem.instance.enable = true; // PhysicsSystem.instance.physicsWorld.
+          // debugger
+
           this.touchNode.on(NodeEventType.TOUCH_START, this.onTouchStart, this);
           this.touchNode.on(NodeEventType.TOUCH_MOVE, this.onTouchStart, this);
           this.touchNode.on(NodeEventType.TOUCH_END, this.onTouchEnd, this); // this.touchNode.on(NodeEventType.TOUCH_END, callback, this);
@@ -1428,27 +1430,33 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
         };
 
         _proto.onTouched = function onTouched(event) {
-          // console.log(event)
-          var loc = event.getUILocation(); // debugger
-          // console.log(x,y)
+          this.test2(event);
+          return; // console.log(event)
+        };
 
-          var uit = this.touchNode.getComponent(UITransform);
-          var nodePos = uit.convertToNodeSpaceAR(v3(loc.x, loc.y)); // let c: Camera
-          // c.screenToWorld()
+        _proto.test2 = function test2(event) {
+          var ray = new geometry.Ray();
+          this.camera.screenPointToRay(event.getLocationX(), event.getLocationY(), ray); // 以下参数可选
 
-          var worldPos = uit.convertToWorldSpaceAR(nodePos);
-          console.log(loc, nodePos, worldPos); // let wp = v3(640, 360, 0)
+          var mask = 0xffffffff;
+          var maxDistance = 10000000;
+          var queryTrigger = false;
 
-          var hits = this.test(worldPos);
-          hits.forEach(function (node) {
-            var sa = node.getComponent(SkeletalAnimation);
-            var name = sa.clips[0].name;
-            var uif = node.getComponent(UIFollower);
-            var label = uif.refNode.getComponent(Label);
-            var s = Number(label.string);
-            label.string = isNaN(s) ? '0' : '' + (s + 1);
-            sa.play(name);
-          });
+          if (PhysicsSystem.instance.raycastClosest(ray, mask, maxDistance, queryTrigger)) {
+            var raycastClosestResult = PhysicsSystem.instance.raycastClosestResult;
+            var collider = raycastClosestResult.collider;
+            var uif = collider.getComponent(UIFollower);
+
+            if (uif) {
+              var label = uif.refNode.getComponent(Label);
+              var s = Number(label.string);
+              label.string = isNaN(s) ? '0' : '' + (s + 1);
+            }
+
+            var hitPoint = raycastClosestResult.hitPoint;
+            var hitNormal = raycastClosestResult.hitNormal;
+            var distance = raycastClosestResult.distance;
+          }
         };
 
         _proto.test = function test(endPos) {
@@ -1486,7 +1494,8 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
             this.delta -= .1;
 
             if (this.touching && this.touchEvent) {
-              this.onTouched(this.touchEvent);
+              // this.onTouched(this.touchEvent)
+              this.test2(this.touchEvent);
             }
           } // let rotate = dt * .1
           // let q: Quat = new Quat()
@@ -1565,7 +1574,14 @@ System.register("chunks:///_virtual/Main.ts", ['./rollupPluginModLoBabelHelpers.
         initializer: function initializer() {
           return null;
         }
-      }), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, "touchNode", [_dec5], {
+      }), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, "camera", [_dec5], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return null;
+        }
+      }), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, "touchNode", [_dec6], {
         configurable: true,
         enumerable: true,
         writable: true,
