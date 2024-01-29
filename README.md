@@ -3,6 +3,6 @@
 - [字串 轉 charCode](/char_code)
 - [plist 轉 fnt](/plist2fnt)
 - [particle demo](/particle-demo)
-- [spine-demo v0.3.0](/spine-demo3)
+- [spine-demo v0.4.0](/spine-viewer)
 - [cocos-uuid](/cocos-uuid)
 <!-- - [gccheck-web](/gccheck-web) -->
