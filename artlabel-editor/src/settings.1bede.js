@@ -1,0 +1,1 @@
+window._CCSettings={platform:"web-desktop",groupList:["default","ui"],collisionMatrix:[[true],[false,false]],hasResourcesBundle:false,hasStartSceneBundle:false,remoteBundles:[],subpackages:[],launchScene:"db://assets/scene/ArtLabelEditor.fire",orientation:"",jsList:[],bundleVers:{internal:"1b082",main:"cbb21"}};
