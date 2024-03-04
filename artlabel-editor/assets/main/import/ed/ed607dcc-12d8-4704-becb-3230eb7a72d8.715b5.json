@@ -1,0 +1,62 @@
+[
+  1,
+  0,
+  0,
+  [
+    [
+      "cc.AnimationClip",
+      [
+        "_name",
+        "_duration",
+        "sample",
+        "curveData"
+      ],
+      -1
+    ]
+  ],
+  [
+    [
+      0,
+      0,
+      1,
+      2,
+      3,
+      5
+    ]
+  ],
+  [
+    [
+      0,
+      "MessageAnim",
+      2,
+      16,
+      {
+        "props": {
+          "opacity": [
+            {
+              "frame": 0,
+              "value": 0
+            },
+            {
+              "frame": 0.1875,
+              "value": 255
+            },
+            {
+              "frame": 1.375,
+              "value": 255
+            },
+            {
+              "frame": 2,
+              "value": 0
+            }
+          ]
+        }
+      }
+    ]
+  ],
+  0,
+  0,
+  [],
+  [],
+  []
+]
