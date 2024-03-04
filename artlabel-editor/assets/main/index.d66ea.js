@@ -26082,9 +26082,12 @@ window.__require = function e(t, n, r) {
       }
       BackgroundProperty.prototype.refresh = function() {
         var frame = null;
-        for (var k in this) if (this.hasOwnProperty(k) && true === this[k]) {
-          frame = exports.backgroundSpriteFrameMap[k];
-          break;
+        for (var k in this) {
+          if (k.startsWith("_")) continue;
+          if (this.hasOwnProperty(k) && true === this[k]) {
+            frame = exports.backgroundSpriteFrameMap[k];
+            break;
+          }
         }
         this.backgroundSprite.spriteFrame = frame;
         this.camera.backgroundColor = this.color;
