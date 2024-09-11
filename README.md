@@ -5,5 +5,5 @@
 - [particle demo](/particle-demo)
 - [spine-viewer v0.4.0](/spine-viewer)
 - [cocos-uuid](/cocos-uuid)
-- [ArtLabel-Editor v0.1.0](/artlabel-editor)
+- [ArtLabel-Editor v0.2.0](/artlabel-editor)
 <!-- - [gccheck-web](/gccheck-web) -->
