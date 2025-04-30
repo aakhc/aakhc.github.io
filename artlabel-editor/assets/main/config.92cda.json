@@ -4,7 +4,7 @@
     "name": "main",
     "deps": [],
     "uuids": [
-        "01c39861e",
+        "07dd065b1",
         "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977",
         "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977@6c48a",
         "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977@f9941",
@@ -12,6 +12,7 @@
         "158e7e52-3220-4cd7-9694-713e0e6e8278@6c48a",
         "158e7e52-3220-4cd7-9694-713e0e6e8278@f9941",
         "1a15578d-733f-4924-b8ab-85c8ff1b2fed",
+        "1fcd58c8-88e8-4982-b5de-84db709de790",
         "20835ba4-6145-4fbc-a58a-051ce700aa3e",
         "20835ba4-6145-4fbc-a58a-051ce700aa3e@6c48a",
         "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
@@ -31,6 +32,7 @@
         "6f01cf7f-81bf-4a7e-bd5d-0afc19696480@b47c0@8fd34",
         "6f01cf7f-81bf-4a7e-bd5d-0afc19696480@b47c0@bb97f",
         "6f01cf7f-81bf-4a7e-bd5d-0afc19696480@b47c0@e9a6d",
+        "7734967c-fe12-4102-ab45-4d230177f2a9",
         "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca",
         "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@6c48a",
         "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@f9941",
@@ -71,6 +73,11 @@
             "cc.SceneAsset",
             1
         ],
+        "7734967c-fe12-4102-ab45-4d230177f2a9": [
+            "db:/assets/submodule/game-client-lib/scene/Loader",
+            "cc.SceneAsset",
+            1
+        ],
         "fd8ec536-a354-4a17-9c74-4f3883c378c8": [
             "db:/internal/default_renderpipeline/builtin-forward",
             "cc.RenderPipeline",
@@ -83,10 +90,11 @@
         ]
     },
     "scenes": {
-        "db://assets/scene/ArtLabelEditor.scene": "1a15578d-733f-4924-b8ab-85c8ff1b2fed"
+        "db://assets/scene/ArtLabelEditor.scene": "1a15578d-733f-4924-b8ab-85c8ff1b2fed",
+        "db://assets/submodule/game-client-lib/scene/Loader.scene": "7734967c-fe12-4102-ab45-4d230177f2a9"
     },
     "packs": {
-        "01c39861e": [
+        "07dd065b1": [
             "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977",
             "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977@6c48a",
             "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977@f9941",
@@ -94,6 +102,7 @@
             "158e7e52-3220-4cd7-9694-713e0e6e8278@6c48a",
             "158e7e52-3220-4cd7-9694-713e0e6e8278@f9941",
             "1a15578d-733f-4924-b8ab-85c8ff1b2fed",
+            "1fcd58c8-88e8-4982-b5de-84db709de790",
             "20835ba4-6145-4fbc-a58a-051ce700aa3e",
             "20835ba4-6145-4fbc-a58a-051ce700aa3e@6c48a",
             "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
@@ -113,6 +122,7 @@
             "6f01cf7f-81bf-4a7e-bd5d-0afc19696480@b47c0@8fd34",
             "6f01cf7f-81bf-4a7e-bd5d-0afc19696480@b47c0@bb97f",
             "6f01cf7f-81bf-4a7e-bd5d-0afc19696480@b47c0@e9a6d",
+            "7734967c-fe12-4102-ab45-4d230177f2a9",
             "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca",
             "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@6c48a",
             "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@f9941",
@@ -150,8 +160,8 @@
     },
     "versions": {
         "import": [
-            "01c39861e",
-            "4e688"
+            "07dd065b1",
+            "589e0"
         ],
         "native": [
             "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977",
