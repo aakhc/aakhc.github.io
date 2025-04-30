@@ -1,4 +1,4 @@
-System.register(['./_virtual_cc-DTRhekk2.js'], (function (exports) {
+System.register(['./virtual_cc-DTRhekk2.js'], (function (exports) {
 	'use strict';
 	return {
 		setters: [function (module) {
