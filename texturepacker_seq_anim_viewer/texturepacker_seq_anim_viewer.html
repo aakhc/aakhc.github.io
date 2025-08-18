@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>TexturePacker / PNG 序列圖 Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@7/dist/pixi.min.js"></script>
+  <style>
+    html,body{height:100%;margin:0;background:#0b0f17;color:#eaeaea;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{display:flex;height:100%}
+    .left{width:360px;min-width:260px;padding:14px;background:#151a27;box-sizing:border-box}
+    .drop{border:2px dashed #6b6f8a;padding:16px;border-radius:10px;text-align:center;cursor:pointer;margin-bottom:10px}
+    #canvas-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center}
+    #info{position:absolute;left:10px;bottom:10px;background:#000a;padding:8px 10px;border-radius:8px;font-size:12px;white-space:pre-line}
+    button{margin:4px 4px 0 0}
+    label{display:block;margin-top:10px}
+    select{width:100%;margin-top:10px}
+    input[type="range"]{width:100%}
+    .row{display:flex;gap:8px;align-items:center;margin-top:8px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="left">
+    <div class="drop" id="drop">拖入 <strong>.png</strong> 與 <strong>.plist</strong>（或點我選擇）</div>
+    <input id="picker" type="file" multiple accept=".plist,.png" style="display:none" />
+
+    <div class="drop" id="dropSeq">點我選擇序列圖資料夾</div>
+    <input id="pickerSeq" type="file" multiple webkitdirectory accept=".png" style="display:none" />
+
+    <select id="animSelect"><option>請載入動畫</option></select>
+    <div class="controls">
+      <button id="play">播放</button>
+      <button id="pause">暫停</button>
+      <button id="prev">上一幀</button>
+      <button id="next">下一幀</button>
+      <label>FPS <span id="fpsLabel">24</span></label>
+      <input id="fps" type="range" min="1" max="60" value="12" />
+      <label>縮放 <span id="scaleLabel">1.0</span></label>
+      <input id="scale" type="range" min="0.25" max="4" step="0.25" value="1" />
+      <label class="row">
+        <input type="checkbox" id="showBounds" checked />
+        <span>顯示原始尺寸外框</span>
+      </label>
+
+      <label>旋轉角度 <span id="rotLabel">0°</span></label>
+      <input id="rot" type="range" min="-180" max="180" step="1" value="0" />
+      <div class="row">
+        <input type="number" id="rotNum" min="-180" max="180" step="1" value="0" style="width:110px;background:#0b0f17;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:6px" />
+        <button id="rotReset">歸零</button>
+        <button id="rotSnap90">±90°</button>
+      </div>
+
+      <label class="row">
+        <input type="checkbox" id="autoRott" />
+        <span>自動旋轉</span>
+      </label>
+    </div>
+  </div>
+  <div id="canvas-wrap"><div id="info">請載入檔案</div></div>
+</div>
+
+<script>
+(function(){
+  const drop = document.getElementById('drop');
+  const picker = document.getElementById('picker');
+  const dropSeq = document.getElementById('dropSeq');
+  const pickerSeq = document.getElementById('pickerSeq');
+  const canvasWrap = document.getElementById('canvas-wrap');
+  const animSelect = document.getElementById('animSelect');
+  const info = document.getElementById('info');
+  const showBounds = document.getElementById('showBounds');
+  const rot = document.getElementById('rot');
+  const rotNum = document.getElementById('rotNum');
+  const rotLabel = document.getElementById('rotLabel');
+  const rotReset = document.getElementById('rotReset');
+  const rotSnap90 = document.getElementById('rotSnap90');
+  const autoRott = document.getElementById('autoRott');
+
+  const app = new PIXI.Application({ backgroundAlpha:0, resizeTo: canvasWrap });
+  canvasWrap.appendChild(app.view);
+
+  let pngBlob=null, plistText=null, baseTexture=null;
+  let atlas={ animations:{} };
+  let currentFrames=[], frameIndex=0, playing=false, ticker=null, fps=24, container=null;
+  let userDeg = 0;
+  let autoRot = false;
+  let currentDeg = userDeg;
+
+  const RRECT=/\{\{(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)\},\s*\{(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)\}\}/;
+  const RSIZE=/\{(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)\}/;
+  function parseRect(s){ const m=s.match(RRECT); return {x:+m[1],y:+m[2],w:+m[3],h:+m[4]}; }
+  function parseSize(s){ const m=s.match(RSIZE); return {w:+m[1],h:+m[2]}; }
+  function parsePoint(s){ const m=s.match(RSIZE); return {x:+m[1],y:+m[2]}; }
+  function readDict(dict){ const out={}; const kids=dict.children; for(let j=0;j<kids.length;j+=2){ const k=kids[j],v=kids[j+1]; if(!k||!v) continue; const key=k.textContent; const tag=v.tagName?.toLowerCase(); let val=v.textContent; if(tag==='true') val=true; else if(tag==='false') val=false; out[key]=val; } return out; }
+  function groupName(fn){ return fn.replace(/(_?\d+)?\.[a-z]+$/i,'').replace(/[^\w]/g,'_'); }
+
+  async function buildAtlas(baseTexture, xml){
+    const doc = new DOMParser().parseFromString(xml,'text/xml');
+    const keys = [...doc.getElementsByTagName('key')];
+    const framesKey = keys.find(k=>k.textContent==='frames');
+    const framesDict = framesKey && framesKey.nextElementSibling && framesKey.nextElementSibling.tagName==='dict' ? framesKey.nextElementSibling : null;
+    if(!framesDict) throw new Error('plist 缺少 frames 節點');
+    const frameKeys = framesDict.getElementsByTagName('key');
+    const texturesByName = {}; const frames = {}; const animations = {};
+    for(let i=0;i<frameKeys.length;i++){
+      const name = frameKeys[i].textContent;
+      const dict = frameKeys[i].nextElementSibling; if(!dict || dict.tagName!=='dict') continue;
+      const map = readDict(dict);
+      const rect = parseRect(map.frame || map.textureRect);
+      const rotated = map.rotated===true || map.textureRotated===true || /true/i.test(map.rotated||map.textureRotated||'');
+      const sourceSize = parseSize(map.sourceSize || map.spriteSourceSize || `{${rect.w},${rect.h}}`);
+      const offset = parsePoint(map.offset || '{0,0}');
+      const cutW = rotated ? rect.h : rect.w;
+      const cutH = rotated ? rect.w : rect.h;
+      const frameRect = new PIXI.Rectangle(rect.x, rect.y, cutW, cutH);
+      const tex = new PIXI.Texture(baseTexture, frameRect);
+      texturesByName[name] = {texture: tex, meta:{ rotated, sourceSize, offset }};
+      frames[name] = { rect:{...rect, w:cutW, h:cutH}, rotated, sourceSize, offset };
+      const g = groupName(name);
+      (animations[g] ||= []).push(name);
+    }
+    Object.keys(animations).forEach(g=>animations[g].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'})));
+    return { texturesByName, frames, animations };
+  }
+
+  function updateInfoPanel(name){
+    if(!atlas || !name){ info.textContent='請載入檔案'; return; }
+    info.textContent = `frameIndex: ${frameIndex+1}/${currentFrames.length}\nname: ${name}\nuserRotation: ${userDeg}°`;
+  }
+
+  function makeSpriteForFrame(name){
+    if (atlas.texturesByName && atlas.texturesByName[name]) {
+      const entry = atlas.texturesByName[name];
+      const { texture, meta } = entry;
+      const spr = new PIXI.Sprite(texture);
+      spr.anchor.set(0.5,0.5);
+      const srcW = meta.sourceSize.w, srcH = meta.sourceSize.h;
+      const baseRot = meta.rotated ? 1.5 * Math.PI : 0;
+      if(meta.rotated){ spr.x = srcW/2 + meta.offset.y; spr.y = srcH/2 + meta.offset.x; }
+      else { spr.x = srcW/2 + meta.offset.x; spr.y = srcH/2 - meta.offset.y; }
+      spr.rotation = baseRot + userDeg * Math.PI/180;
+      const cont = new PIXI.Container();
+      if(showBounds.checked){
+        const bounds = new PIXI.Graphics();
+        bounds.lineStyle(1,0x44ff88,0.85).drawRect(0,0,srcW,srcH);
+        cont.addChild(bounds);
+      }
+      cont.addChild(spr);
+      cont.pivot.set(srcW/2, srcH/2);
+      return cont;
+    } else {
+      const spr = PIXI.Sprite.from(name);
+      spr.anchor.set(0.5,0.5);
+      spr.rotation = userDeg * Math.PI / 180;
+      const cont = new PIXI.Container();
+      if(showBounds.checked){
+        const bounds = new PIXI.Graphics();
+        bounds.lineStyle(1,0x44ff88,0.85)
+              .drawRect(-spr.width/2, -spr.height/2, spr.width, spr.height);
+        cont.addChild(bounds);
+      }
+      cont.addChild(spr);
+      // cont.pivot.set(spr.width/2, spr.height/2);
+      return cont;
+    }
+  }
+
+  function updateSprite(){
+    if(!currentFrames.length) return;
+    const frame = currentFrames[frameIndex];
+    const cont = makeSpriteForFrame(frame);
+    if(container) app.stage.removeChild(container);
+    container = cont; app.stage.addChild(container);
+    container.scale.set(parseFloat(document.getElementById('scale').value));
+    container.position.set(app.renderer.width/2, app.renderer.height/2);
+    updateInfoPanel(frame);
+  }
+
+  function startPlaying(){ 
+    if(playing||currentFrames.length===0) return; 
+    playing = true; 
+    if(ticker){
+      clearInterval(ticker)
+    }
+    ticker = setInterval(()=>{ 
+      frameIndex=(frameIndex+1)%currentFrames.length; 
+      if(autoRot){
+        currentDeg+=1;
+        if(currentDeg>180) currentDeg=-180;
+        setUserDeg(currentDeg);
+      }
+      updateSprite(); 
+    }, 1000/fps); 
+  }
+  function stopPlaying(){ playing=false; clearInterval(ticker); }
+
+  async function loadFiles(){
+    const img = new Image(); img.src = URL.createObjectURL(pngBlob); await img.decode();
+    baseTexture = PIXI.BaseTexture.from(img);
+    const built = await buildAtlas(baseTexture, plistText);
+    atlas.texturesByName = built.texturesByName;
+    atlas.frames = built.frames;
+    Object.assign(atlas.animations, built.animations);
+    updateAnimSelect();
+  }
+
+  function updateAnimSelect(){
+     animSelect.innerHTML = '';
+
+    const keys = Object.keys(atlas.animations);
+
+    // 自然排序，沒數字的放最後
+    keys.sort((a, b) => {
+        const regex = /(\d+)|(\D+)/g;
+
+        const aMatch = a.match(/\d+/);
+        const bMatch = b.match(/\d+/);
+        const aHasNum = !!aMatch;
+        const bHasNum = !!bMatch;
+
+        // 沒數字的放後面
+        if (aHasNum && !bHasNum) return -1;
+        if (!aHasNum && bHasNum) return 1;
+        if (!aHasNum && !bHasNum) {
+            // 都沒數字就純字母排序
+            return a.localeCompare(b);
+        }
+
+        // 都有數字 → 自然排序
+        const aParts = a.match(regex);
+        const bParts = b.match(regex);
+        const len = Math.max(aParts.length, bParts.length);
+
+        for (let i = 0; i < len; i++) {
+            const aPart = aParts[i] || '';
+            const bPart = bParts[i] || '';
+
+            const aNum = Number(aPart);
+            const bNum = Number(bPart);
+            const aIsNum = !isNaN(aNum) && /^\d+$/.test(aPart);
+            const bIsNum = !isNaN(bNum) && /^\d+$/.test(bPart);
+
+            if (aIsNum && bIsNum) {
+                if (aNum !== bNum) return aNum - bNum;
+            } else {
+                if (aPart !== bPart) return aPart.localeCompare(bPart);
+            }
+        }
+        return 0;
+    });
+
+    // 建立選項
+    for (const g of keys) {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g;
+        animSelect.appendChild(opt);
+    }
+
+    if (animSelect.options.length) {
+        animSelect.selectedIndex = 0;
+        changeAnimation(animSelect.value);
+    }
+  }
+
+  function changeAnimation(name){ currentFrames = atlas.animations[name] || []; frameIndex=0; stopPlaying(); startPlaying(); }
+
+  function tryLoadIfReady(){ if(pngBlob && plistText) loadFiles(); }
+  function handleFileUpload(files){ for(const f of files){ const n=f.name.toLowerCase(); if(n.endsWith('.png')){ pngBlob=f; tryLoadIfReady(); } else if(n.endsWith('.plist')){ const r=new FileReader(); r.onload=()=>{ plistText=r.result; tryLoadIfReady(); }; r.readAsText(f); } } }
+
+  // PNG 序列圖處理
+  function handleSeqFiles(fileList) {
+    const pngs = Array.from(fileList).filter(f=>f.name.toLowerCase().endsWith('.png'));
+    const groups = {};
+    for (const f of pngs) {
+      const m = f.name.match(/^(.*?)(?:_(\d{1,2}))\.png$/i);
+      if (!m) continue;
+      const base = m[1];
+      (groups[base] ||= []).push(f);
+    }
+    for (const [groupName, imgs] of Object.entries(groups)) {
+      imgs.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+      atlas.animations[groupName] = imgs.map(f=>URL.createObjectURL(f));
+    }
+    updateAnimSelect();
+  }
+
+  async function tryScanDirectoryItems(items){
+    if(!items || !items.length) return null;
+    if(!items[0].webkitGetAsEntry) return null; // 不支援資料夾 API
+    const allFiles = [];
+    let pending = 0;
+    return new Promise(resolve=>{
+      function readEntry(entry, depth=0) {
+        if (entry.isFile) {
+          pending++;
+          entry.file(file => {
+            allFiles.push(file);
+            pending--;
+            if (!pending) resolve(allFiles);
+          });
+        } else if (entry.isDirectory && depth < 6) {
+          const reader = entry.createReader();
+          pending++;
+          reader.readEntries(entries => {
+            pending--;
+            for (const ent of entries) readEntry(ent, depth+1);
+          });
+        }
+      }
+      for (const item of items) {
+        const entry = item.webkitGetAsEntry();
+        if (entry) readEntry(entry);
+      }
+    });
+  }
+
+  // 綁定事件
+  drop.addEventListener('click',()=>picker.click());
+  picker.addEventListener('change',e=>handleFileUpload(e.target.files));
+  drop.addEventListener('dragover',e=>e.preventDefault());
+  drop.addEventListener('drop',e=>{e.preventDefault(); handleFileUpload(e.dataTransfer.files);});
+
+  dropSeq.addEventListener('click',()=>pickerSeq.click());
+  pickerSeq.addEventListener('change',e=>handleSeqFiles(e.target.files));
+  dropSeq.addEventListener('dragover',e=>e.preventDefault());
+  dropSeq.addEventListener('drop',async e=>{
+    e.preventDefault();
+    let files = await tryScanDirectoryItems(e.dataTransfer.items);
+    if(files && files.length){
+      handleSeqFiles(files);
+    } else {
+      // fallback: 用普通 file list 處理
+      handleSeqFiles(e.dataTransfer.files);
+    }
+  });
+
+  animSelect.addEventListener('change',()=>changeAnimation(animSelect.value));
+  document.getElementById('play').onclick = ()=>{ fps=parseInt(document.getElementById('fps').value); startPlaying(); };
+  document.getElementById('pause').onclick= stopPlaying;
+  document.getElementById('next').onclick = ()=>{ stopPlaying(); frameIndex=(frameIndex+1)%currentFrames.length; updateSprite(); };
+  document.getElementById('prev').onclick = ()=>{ stopPlaying(); frameIndex=(frameIndex-1+currentFrames.length)%currentFrames.length; updateSprite(); };
+  document.getElementById('fps').oninput = e=>{ document.getElementById('fpsLabel').textContent=e.target.value; fps=parseInt(e.target.value); if(playing){ stopPlaying(); startPlaying(); } };
+  document.getElementById('scale').oninput = e=>{ document.getElementById('scaleLabel').textContent=e.target.value; if(container) container.scale.set(parseFloat(e.target.value)); };
+  showBounds.addEventListener('change', updateSprite);
+
+  function setUserDeg(v){
+    userDeg = Math.max(-180, Math.min(180, Number(v)||0));
+    rot.value = String(userDeg);
+    rotNum.value = String(userDeg);
+    rotLabel.textContent = userDeg + '°';
+  }
+  rot.addEventListener('input', e=> setUserDeg(e.target.value));
+  rotNum.addEventListener('change', e=> setUserDeg(e.target.value));
+  rotReset.addEventListener('click', ()=> setUserDeg(0));
+  rotSnap90.addEventListener('click', ()=> {
+    const steps = [-180,-90,0,90,180];
+    let nearest = steps[0], d = Infinity;
+    for(const s of steps){ const dd = Math.abs(userDeg - s); if(dd < d){ d = dd; nearest = s; } }
+    if(Math.abs(userDeg - nearest) < 1e-6){ nearest = (userDeg===0||Math.abs(userDeg)===180) ? 90 : 0; }
+    setUserDeg(nearest);
+  });
+  autoRott.addEventListener('change', e=>{ autoRot = e.target.checked; updateSprite(); });
+
+})();
+</script>
+</body>
+</html>
