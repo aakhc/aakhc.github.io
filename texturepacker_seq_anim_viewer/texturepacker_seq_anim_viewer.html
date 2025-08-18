@@ -27,6 +27,9 @@
     <div class="drop" id="dropSeq">點我選擇序列圖資料夾</div>
     <input id="pickerSeq" type="file" multiple webkitdirectory accept=".png" style="display:none" />
 
+    <div class="drop" id="dropBg">拖入 <strong>背景 PNG</strong>（或點我選擇）</div>
+    <input id="pickerBg" type="file" accept=".png" style="display:none" />
+
     <select id="animSelect"><option>請載入動畫</option></select>
     <div class="controls">
       <button id="play">播放</button>
@@ -361,6 +364,53 @@
     setUserDeg(nearest);
   });
   autoRott.addEventListener('change', e=>{ autoRot = e.target.checked; updateSprite(); });
+  
+  const dropBg = document.getElementById('dropBg');
+  const pickerBg = document.getElementById('pickerBg');
+  let bgSprite = null;
+
+  function handleBgFile(file){
+    if(!file || !file.type.startsWith("image/")) return;
+    const url = URL.createObjectURL(file);
+    const tex = PIXI.Texture.from(url);
+
+    if(bgSprite){
+      app.stage.removeChild(bgSprite);
+      bgSprite.destroy(true);
+    }
+    bgSprite = new PIXI.Sprite(tex);
+    bgSprite.anchor.set(0.5);
+    bgSprite.x = app.renderer.width/2;
+    bgSprite.y = app.renderer.height/2;
+
+    function resizeBg(){
+      const scale = Math.max(
+        app.renderer.width / bgSprite.texture.width,
+        app.renderer.height / bgSprite.texture.height
+      );
+      bgSprite.scale.set(scale);
+    }
+
+    // ✅ 等 baseTexture 載入完成
+    bgSprite.texture.baseTexture.once('loaded', () => {
+      resizeBg();
+      app.stage.addChildAt(bgSprite, 0); // 放在最底層
+      app.renderer.on('resize', resizeBg);
+    });
+  }
+
+
+  // 綁定事件
+  dropBg.addEventListener('click', ()=>pickerBg.click());
+  pickerBg.addEventListener('change', e=>handleBgFile(e.target.files[0]));
+  dropBg.addEventListener('dragover', e=>e.preventDefault());
+  dropBg.addEventListener('drop', e=>{
+    e.preventDefault();
+    if(e.dataTransfer.files.length){
+      handleBgFile(e.dataTransfer.files[0]);
+    }
+  });
+
 
 })();
 </script>
